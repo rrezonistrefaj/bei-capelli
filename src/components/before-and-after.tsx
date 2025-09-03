@@ -105,7 +105,7 @@ export function BeforeAfterCarousel() {
       */}
       <div
         className="overflow-visible"
-        ref={emblaRef as any}
+        ref={emblaRef}
         style={{ width: "calc((100vw + 1256px) / 2)" }}
       >
         <div className="flex">
