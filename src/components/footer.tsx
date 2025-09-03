@@ -44,7 +44,7 @@ export default function Footer() {
           {/* Contact Form */}
           <div>
             <h3 className="text-2xl font-bold text-black mb-2">Have Questions ?</h3>
-            <p className="text-black mb-8">Don't hesitate to contact us. We're happy to help!</p>
+            <p className="text-black mb-8">Don&#39;t hesitate to contact us. We&#39;re happy to help!</p>
 
             <form className="space-y-6">
               {/* Name and Email Row */}
