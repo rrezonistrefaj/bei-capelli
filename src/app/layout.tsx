@@ -28,12 +28,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* Fixed navbar so it overlays pages */}
         <div className="fixed top-0 left-0 right-0 z-50">
           <Navbar />
         </div>
 
-        {/* Provide top padding so page content doesn't sit under the fixed navbar */}
         <main>{children}</main>
       </body>
     </html>

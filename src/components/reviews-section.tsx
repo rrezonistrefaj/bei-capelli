@@ -3,6 +3,7 @@ import React from "react"
 import useEmblaCarousel from "embla-carousel-react"
 import { ChevronLeft, ChevronRight, Star, Edit } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import Image from "next/image"
 
 const reviews = [
   {
@@ -64,14 +65,14 @@ export function ReviewsCarousel() {
 
   return (
     <div className="relative">
-      {/* Carousel Container - constrained by max width but allow visible overflow */}
-      <div className="max-w-[1265px] mx-auto overflow-visible">
+  {/* Carousel Container - align with 78.5rem site container and allow right overflow */}
+  <div className="max-w-[78.5rem] mx-auto overflow-hidden sm:overflow-visible">
         {/* Embla viewport: allow visible overflow so slides can peek past the right edge */}
-        <div className="overflow-visible" ref={emblaRef}>
-          <div className="flex pl-0">
+    <div className="overflow-hidden sm:overflow-visible" ref={emblaRef}>
+      <div className="flex pl-0 gap-4 sm:gap-6">
             {reviews.map((review) => (
-              <div key={review.id} className="flex-[0_0_404px] mr-6">
-                <div className="border border-gray-400 p-6 h-[450px] flex flex-col bg-transparent">
+        <div key={review.id} className="flex-[0_0_100%] sm:flex-[0_0_404px]">
+                <div className="border border-gray-400 px-10 pt-6.5 pb-8.5 h-full min-h-[450px] flex flex-col bg-transparent">
                   {/* Star Rating */}
                   <div className="flex mb-4">
                     {[...Array(5)].map((_, i) => (
@@ -80,18 +81,20 @@ export function ReviewsCarousel() {
                   </div>
 
                   {/* Review Text */}
-                  <p className="text-black text-sm leading-relaxed mb-6 flex-grow">{review.text}</p>
+                  <p className="text-black text-xl leading-5.5 mb-6 flex-grow">{review.text}</p>
 
                   {/* Customer Info */}
                   <div className="flex items-center">
-                    <img
+                    <Image
                       src={review.avatar || "/placeholder.svg"}
                       alt={review.customerName}
-                      className="w-12 h-12 rounded-full mr-3 object-cover"
+                      width={80}
+                      height={80}
+                      className="w-20 h-20 rounded-full mr-3 object-cover"
                     />
                     <div>
-                      <h4 className="text-black font-medium text-sm">{review.customerName}</h4>
-                      <p className="text-black text-xs">{review.date}</p>
+                      <h4 className="text-black font-normal text-xl">{review.customerName}</h4>
+                      <p className="text-black text-base font-light">{review.date}</p>
                     </div>
                   </div>
                 </div>
@@ -101,29 +104,37 @@ export function ReviewsCarousel() {
         </div>
       </div>
 
-      {/* Bottom Section with Button and Navigation - placed relative to page, aligned with max-width container */}
-      <div className="max-w-[1265px] mx-auto flex items-center justify-between mt-8 pr-8 overflow-visible">
+  {/* Bottom Section with Button and Navigation - aligned with 78.5rem container */}
+  <div className="max-w-[78.5rem] mx-auto flex items-center justify-between mt-8 overflow-visible">
         {/* Place Review Button */}
         <Button
           variant="outline"
-          className="border-black text-black hover:bg-black hover:text-white transition-colors bg-transparent rounded-none flex items-center gap-2"
+          className="border-black text-black hover:bg-black hover:text-white transition-colors bg-transparent rounded-none flex items-center text-xl font-light gap-2 !px-6 !py-6"
         >
-          <Edit className="w-4 h-4" />
+          <Edit className="w-5 h-5" />
           Plaats enn Review
         </Button>
 
         {/* Navigation Arrows */}
         <div className="flex items-center gap-4">
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={scrollPrev}
-            className="p-2 hover:bg-black/10 transition-colors"
+            className="text-black hover:bg-black/10 rounded-none p-2"
             aria-label="Previous reviews"
           >
             <ChevronLeft className="w-6 h-6 text-black" />
-          </button>
-          <button onClick={scrollNext} className="p-2 hover:bg-black/10 transition-colors" aria-label="Next reviews">
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={scrollNext}
+            className="text-black hover:bg-black/10 rounded-none p-2"
+            aria-label="Next reviews"
+          >
             <ChevronRight className="w-6 h-6 text-black" />
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -133,16 +144,16 @@ export function ReviewsCarousel() {
 export default function ReviewsSection() {
   return (
     /* Reviews Section */
-    <section className="py-16" style={{ backgroundColor: "#DFD6C9" }}>
-      {/* Section Header with left padding only */}
-      <div className="px-8 mb-12">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-bold text-black mb-6 tracking-tight">REVIEWS</h2>
+    <section className=" px-4 xl:px-0">
+      {/* Section Header aligned with content container */}
+      <div className="mb-6">
+        <div className="max-w-[78.5rem] mx-auto">
+          <h2 className="text-4xl md:text-5xl text-black ">REVIEWS</h2>
         </div>
       </div>
 
       {/* Reviews Carousel - extends to screen edge but limited visually to 1265px center with overflow visible on right */}
-      <div className="pl-8">
+      <div className="">
         <ReviewsCarousel />
       </div>
     </section>

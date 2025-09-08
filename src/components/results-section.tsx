@@ -3,6 +3,13 @@
 import React from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
+import {
+  type CarouselApi,
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel"
+import { ArrowLeft, ArrowRight } from "lucide-react"
 
 const cards = [
   {
@@ -20,37 +27,122 @@ const cards = [
 ]
 
 export default function ResultsSection() {
+  const [api, setApi] = React.useState<CarouselApi | null>(null)
+  const [canPrev, setCanPrev] = React.useState(false)
+  const [canNext, setCanNext] = React.useState(false)
+
+  React.useEffect(() => {
+    if (!api) return
+    const onSelect = () => {
+      setCanPrev(api.canScrollPrev())
+      setCanNext(api.canScrollNext())
+    }
+    onSelect()
+    api.on("reInit", onSelect)
+    api.on("select", onSelect)
+    return () => {
+      api.off("select", onSelect)
+    }
+  }, [api])
+
   return (
-    <section className="py-12" style={{ backgroundColor: "#DFD6C9" }}>
+    <section className=" px-4 xl:px-0">
       <div className="max-w-[1265px] mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Mobile: Carousel */}
+        <div className="block md:hidden">
+          <Carousel className="" setApi={setApi}>
+            <CarouselContent>
+              {cards.map((card, idx) => (
+                <CarouselItem key={idx}>
+                  <article
+                    className="border border-gray-700 bg-transparent"
+                   
+                  >
+                    <div className="w-full h-64 relative">
+                      <Image
+                        src={card.image}
+                        alt={card.title}
+                        fill
+                        sizes="100vw"
+                        className="object-cover"
+                      />
+                    </div>
+
+                    <div className="px-[1.5625rem] pt-13.5 pb-[2.6875rem]">
+                      <h3 className="text-2xl text-gray-800 font-light mb-2.5">
+                        {card.title}
+                      </h3>
+                      <p className="text-xl text-gray-800 mb-13.5 font-light max-w-[484px]">
+                        {card.copy}
+                      </p>
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="border border-gray-700 text-gray-800 text-xl font-light hover:bg-transparent rounded-none px-10.5 py-5.5"
+                      >
+                        Meer Informatie
+                      </Button>
+                    </div>
+                  </article>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+          </Carousel>
+          {/* Bottom navigation buttons */}
+          <div className="mt-4 flex items-center justify-center gap-3">
+            <Button
+              variant="outline"
+              size="icon"
+              className="rounded-full size-8"
+              onClick={() => api?.scrollPrev()}
+              disabled={!canPrev}
+              aria-label="Previous slide"
+            >
+              <ArrowLeft />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="rounded-full size-8"
+              onClick={() => api?.scrollNext()}
+              disabled={!canNext}
+              aria-label="Next slide"
+            >
+              <ArrowRight />
+            </Button>
+          </div>
+        </div>
+
+        {/* Desktop: Grid (no carousel) */}
+        <div className="hidden md:grid grid-cols-2 gap-8">
           {cards.map((card, idx) => (
             <article
               key={idx}
               className="border border-gray-700 bg-transparent"
-              style={{ backgroundColor: "#DFD6C9" }}
             >
-              <div className="w-full h-64 md:h-72 relative">
+              <div className="w-full h-72 relative">
                 <Image
                   src={card.image}
                   alt={card.title}
                   fill
-                  style={{ objectFit: "cover" }}
+                  sizes="(max-width: 1265px) 50vw, 632px"
+                  className="object-cover"
                 />
               </div>
 
-              <div className="p-8 border-t border-gray-700 ">
-                <h3 className="text-2xl md:text-3xl text-gray-800 font-light tracking-wide mb-4">
+              <div className="px-[1.5625rem] pt-13.5 pb-[2.6875rem]">
+                <h3 className="text-3xl text-gray-800 font-light mb-2.5">
                   {card.title}
                 </h3>
-                <p className="text-sm leading-relaxed text-gray-800 mb-6 whitespace-normal">
+                <p className="text-xl text-gray-800 mb-13.5 font-light max-w-[484px]">
                   {card.copy}
                 </p>
 
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="border border-gray-700 text-gray-800 hover:bg-transparent rounded-none"
+                  className="border border-gray-700 text-gray-800 text-xl font-light hover:bg-transparent rounded-none px-10.5 py-5.5"
                 >
                   Meer Informatie
                 </Button>
