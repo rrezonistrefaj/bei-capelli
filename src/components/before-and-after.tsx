@@ -5,6 +5,7 @@ import useEmblaCarousel from "embla-carousel-react"
 import { ChevronLeft, ChevronRight, ZoomIn, X } from "lucide-react"
 import { Button } from "./ui/button"
 import Image from "next/image"
+import { motion, useReducedMotion } from "framer-motion"
 
 interface BeforeAfterItem {
   id: string
@@ -79,6 +80,7 @@ export function BeforeAfterCarousel() {
   const [zoomSrc, setZoomSrc] = useState<string | null>(null)
   const [zoomAlt, setZoomAlt] = useState<string>("")
   const [zoomSize, setZoomSize] = useState<{ w: number; h: number } | null>(null)
+  const reduceMotion = useReducedMotion()
 
   const openZoom = (src: string, alt: string) => {
     setZoomSrc(src)
@@ -127,7 +129,13 @@ export function BeforeAfterCarousel() {
 
   return (
     <div className="w-full">
-      <div className="flex justify-center mb-12">
+      <motion.div
+        className="flex justify-center mb-12"
+        initial={{ opacity: 0, y: 10 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.6 }}
+        transition={{ duration: reduceMotion ? 0 : 0.5, ease: "easeOut" }}
+      >
         <div className="inline-flex items-center gap-0.5 px-4 py-2 bg-transparent">
           {filterOptions.map((filter) => (
             <Button
@@ -147,7 +155,7 @@ export function BeforeAfterCarousel() {
             </Button>
           ))}
         </div>
-      </div>
+  </motion.div>
 
       <div
         className="overflow-hidden md:overflow-visible w-full md:w-[calc((100vw+1256px)/2)]"
@@ -155,7 +163,14 @@ export function BeforeAfterCarousel() {
       >
         <div className="flex gap-4 md:gap-0">
           {filteredData.map((item) => (
-            <div key={item.id} className="flex-[0_0_100%] md:flex-[0_0_85%] min-w-0 pr-0 md:pr-8">
+            <motion.div
+              key={item.id}
+              className="flex-[0_0_100%] md:flex-[0_0_85%] min-w-0 pr-0 md:pr-8"
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.15 }}
+              transition={{ duration: reduceMotion ? 0 : 0.5, ease: "easeOut" }}
+            >
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 items-center">
                 <div className="relative w-full aspect-square md:w-[512px] md:h-[512px] group">
                   <Image
@@ -176,20 +191,49 @@ export function BeforeAfterCarousel() {
                   </Button>
                 </div>
 
-                <div className=" max-w-[480px]">
-                  <h3 className="text-4xl font-normal text-black mb-6">{item.title}</h3>
-                  <p className="text-black text-xl font-light leading-tight mb-10">{item.description}</p>
+                <div className="max-w-[480px]">
+                  <motion.h3
+                    className="text-4xl font-normal text-black mb-6"
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.7 }}
+                    transition={{ duration: reduceMotion ? 0 : 0.45, ease: "easeOut" }}
+                  >
+                    {item.title}
+                  </motion.h3>
+                  <motion.p
+                    className="text-black text-xl font-light leading-tight mb-10"
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.7 }}
+                    transition={{ duration: reduceMotion ? 0 : 0.45, ease: "easeOut", delay: reduceMotion ? 0 : 0.05 }}
+                  >
+                    {item.description}
+                  </motion.p>
 
                   <ul  className="mb-6">
                     {item.benefits.map((benefit, index) => (
-                      <li key={index} className="flex items-center text-black font-light text-xl leading-tight">
+                      <motion.li
+                        key={index}
+                        className="flex items-center text-black font-light text-xl leading-tight"
+                        initial={{ opacity: 0, y: 8 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, amount: 0.8 }}
+                        transition={{ duration: reduceMotion ? 0 : 0.35, ease: "easeOut", delay: reduceMotion ? 0 : index * 0.05 }}
+                      >
                         <span className="w-1.5 h-1.5   bg-black rounded-full mr-3 flex-shrink-0"></span>
                         {benefit}
-                      </li>
+                      </motion.li>
                     ))}
                   </ul>
 
-                  <div className="flex gap-4 pt-4">
+                  <motion.div
+                    className="flex gap-4 pt-4"
+                    initial={{ opacity: 0, y: 8 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.8 }}
+                    transition={{ duration: reduceMotion ? 0 : 0.35, ease: "easeOut" }}
+                  >
                     <button
                       onClick={scrollPrev}
                       className="p-2 hover:bg-black/10 rounded-full transition-colors"
@@ -204,10 +248,10 @@ export function BeforeAfterCarousel() {
                     >
                       <ChevronRight className="w-6 h-6 text-black" />
                     </button>
-                  </div>
+                  </motion.div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
@@ -251,11 +295,17 @@ export default function BeforeAndAfter() {
   return (
     <section className="pt-14 sm:pt-24 md:pt-32 lg:pt-48  xl:pt-[15.625rem]">
       {/* Section Header with centered alignment */}
-      <div className="max-w-7xl mx-auto px-8 mb-12">
+      <motion.div
+        className="max-w-7xl mx-auto px-8 mb-12"
+        initial={{ opacity: 0, y: 12 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.6 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
         <div className="text-center">
           <h2 className="text-4xl md:text-[2.875rem]  text-black">VOOR & NA</h2>
         </div>
-      </div>
+      </motion.div>
 
       {/* Before & After Carousel - constrained left column (1256px) but allows overflow to the right */}
       <div className="max-w-[1256px] mx-auto px-4 md:px-0 md:pl-8 !overflow-visible">

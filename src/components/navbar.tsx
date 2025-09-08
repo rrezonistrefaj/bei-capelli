@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import React, { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { motion, useReducedMotion } from "framer-motion"
 
 export default function Navbar() {
 	const [scrolled, setScrolled] = useState(false)
@@ -11,6 +12,31 @@ export default function Navbar() {
 	const closeBtnRef = useRef<HTMLButtonElement | null>(null)
 	const panelRef = useRef<HTMLDivElement | null>(null)
 	const lastFocusedRef = useRef<HTMLElement | null>(null)
+	const reduceMotion = useReducedMotion()
+
+	// Animation variants
+	const containerVariants = {
+		hidden: { opacity: 0, y: -16 },
+		visible: {
+			opacity: 1,
+			y: 0,
+			transition: {
+				duration: reduceMotion ? 0 : 0.5,
+				ease: "easeOut",
+				when: "beforeChildren",
+				staggerChildren: reduceMotion ? 0 : 0.05,
+			},
+		},
+	} as const
+
+	const itemVariants = {
+		hidden: { opacity: 0, y: -8 },
+		visible: {
+			opacity: 1,
+			y: 0,
+			transition: { duration: reduceMotion ? 0 : 0.4, ease: "easeOut" },
+		},
+	} as const
 
 	// Header background on scroll
 	useEffect(() => {
@@ -86,53 +112,55 @@ export default function Navbar() {
 			/>
 
 			<header className="relative z-30 w-full">
-				<div className="mx-auto flex max-w-[1265px] items-center justify-between px-4 py-4 xl:px-0">
+				<motion.div
+					className="mx-auto flex max-w-[1265px] items-center justify-between px-4 py-4 xl:px-0"
+					variants={containerVariants}
+					initial="hidden"
+					whileInView="visible"
+					viewport={{ once: true, amount: 0.6 }}
+				>
 					{/* Logo */}
-					<Link href="/#home" className="flex items-center" aria-label="Go to home">
-						<Image
-							src="/images/bei-capelli-logo.png"
-							alt="Bei Capelli Logo"
-							width={120}
-							height={28}
-							className="h-auto w-[110px] sm:w-[120px] object-contain"
-							priority
-						/>
-					</Link>
+					<motion.div variants={itemVariants} className="flex items-center">
+						<Link href="/#home" className="flex items-center" aria-label="Go to home">
+							<Image
+								src="/images/bei-capelli-logo.png"
+								alt="Bei Capelli Logo"
+								width={120}
+								height={28}
+								className="h-auto w-[110px] sm:w-[120px] object-contain"
+								priority
+							/>
+						</Link>
+					</motion.div>
 
 					{/* Desktop navigation (visible at xl and up) */}
 					<nav className="hidden xl:flex items-center gap-7 lg:gap-9">
-						<Link href="/#home" className="text-black hover:text-gray-600 transition-colors">
-							Home
-						</Link>
-						<Link href="/#team-members" className="text-black hover:text-gray-600 transition-colors">
-							Team Members
-						</Link>
-						<Link href="/#services" className="text-black hover:text-gray-600 transition-colors">
-							Services
-						</Link>
-						<Link href="/#results" className="text-black hover:text-gray-600 transition-colors">
-							Results
-						</Link>
-						<Link href="/#products" className="text-black hover:text-gray-600 transition-colors">
-							Products
-						</Link>
-						<Link href="/#reviews" className="text-black hover:text-gray-600 transition-colors">
-							Reviews
-						</Link>
-						<Link href="/#contact" className="text-black hover:text-gray-600 transition-colors">
-							Contact
-						</Link>
+						{[
+							{ href: "/#home", label: "Home" },
+							{ href: "/#team-members", label: "Team Members" },
+							{ href: "/#services", label: "Services" },
+							{ href: "/#results", label: "Results" },
+							{ href: "/#products", label: "Products" },
+							{ href: "/#reviews", label: "Reviews" },
+							{ href: "/#contact", label: "Contact" },
+						].map((item) => (
+							<motion.div key={item.href} variants={itemVariants}>
+								<Link href={item.href} className="text-black hover:text-gray-600 transition-colors">
+									{item.label}
+								</Link>
+							</motion.div>
+						))}
 					</nav>
 
 					{/* Desktop CTA (visible at xl and up) */}
-					<div className="hidden xl:block">
+					<motion.div className="hidden xl:block" variants={itemVariants}>
 						<Button
 							variant="outline"
 							className="border-black text-black bg-[#E6E4E1] hover:bg-black hover:text-white transition-colors rounded-none px-5 py-3"
 						>
 							Book now
 						</Button>
-					</div>
+					</motion.div>
 
 					{/* Mobile hamburger (visible until xl) */}
 					<div className="xl:hidden">
@@ -166,7 +194,7 @@ export default function Navbar() {
 							</svg>
 						</Button>
 					</div>
-				</div>
+				</motion.div>
 			</header>
 
 			{/* Mobile full-screen menu overlay */}

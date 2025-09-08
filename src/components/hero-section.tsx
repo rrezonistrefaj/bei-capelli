@@ -1,7 +1,33 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
+import { motion, useReducedMotion } from "framer-motion"
 
 export default function HeroSection() {
+  const reduceMotion = useReducedMotion()
+
+  const container = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: reduceMotion ? 0 : 0.6,
+        when: "beforeChildren",
+        staggerChildren: reduceMotion ? 0 : 0.08,
+      },
+    },
+  } as const
+
+  const item = {
+    hidden: { opacity: 0, y: 16 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: reduceMotion ? 0 : 0.6, ease: "easeOut" },
+    },
+  } as const
+
   return (
     <div className="min-h-screen relative">
       {/* Background Image (Next/Image) */}
@@ -23,25 +49,33 @@ export default function HeroSection() {
 
         {/* Hero Section */}
         <main className="flex flex-col flex-1 max-w-[1265px] mx-auto w-full px-4 xl:px-0 pb-[6.25rem] sm:pb-20 lg:pb-[6.25rem]">
-          <div className="max-w-3xl mt-auto">
+          <motion.div
+            className="max-w-3xl mt-auto"
+            variants={container}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.6 }}
+          >
             {/* Main Heading */}
-            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-normal text-black leading-none">
+            <motion.h1 variants={item} className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-normal text-black leading-none">
               KAPPER<br/>
               BENNEKOM
-            </h1>
-            <hr className="w-full border-t-1 border-black/90 mb-6 sm:mb-8" />
+            </motion.h1>
+            <motion.hr variants={item} className="w-full border-t-1 border-black/90 mb-6 sm:mb-8" />
             {/* Description Text */}
-            <p className="text-black text-lg sm:text-xl lg:text-2xl font-light mb-6 sm:mb-8  ">
+            <motion.p variants={item} className="text-black text-lg sm:text-xl lg:text-2xl font-light mb-6 sm:mb-8  ">
               Sinds 2014 is Bei Capelli Kapper Bennekom dé plek voor de laatste haar trends. Door de jaren hebben wij al
               een heleboel fijne en trouwe klanten mogen verwelkomen. Iedereen wordt met speciale aandacht behandeld
               door ervaren stylisten om uitmuntende kwaliteit en service te garanderen.
-            </p>
+            </motion.p>
 
             {/* CTA Button */}
-              <Button className="w-full sm:w-auto bg-black text-white hover:bg-gray-800 px-2.5 py-6 text-xl rounded-none font-medium transition-colors duration-200">
-                Make an Appointment
-              </Button>
-          </div>
+              <motion.div variants={item}>
+                <Button className="w-full sm:w-auto bg-black text-white hover:bg-gray-800 px-2.5 py-6 text-xl rounded-none font-medium transition-colors duration-200">
+                  Make an Appointment
+                </Button>
+              </motion.div>
+          </motion.div>
         </main>
       </div>
     </div>

@@ -1,5 +1,8 @@
+"use client"
+
 import React from "react"
 import { HelpCircle, User, Monitor, Phone, Clock, Gift } from "lucide-react"
+import { motion, useReducedMotion } from "framer-motion"
 
 const items: {
   id: string
@@ -68,22 +71,42 @@ For example: haircuts and/or coloring. Available times:
 ]
 
 const WelcomeSection = () => {
+  const reduceMotion = useReducedMotion()
   return (
     <section className="pt-14 sm:pt-24 md:pt-32 lg:pt-48 xl:pt-[15.625rem] pb-[9.375rem]">
       <div className="max-w-[856px] mx-auto text-center px-6">
-        <h2 className="text-4xl md:text-5xl font-light text-black mb-4 leading-12">
+        <motion.h2
+          className="text-4xl md:text-5xl font-light text-black mb-4 leading-12"
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.6 }}
+          transition={{ duration: reduceMotion ? 0 : 0.6, ease: "easeOut" }}
+        >
           EVERYONE IS
           <span className="block">WELCOME</span>
-        </h2>
+        </motion.h2>
 
-        <p className="text-xl font-light text-black mb-12 max-w-[680px] mx-auto leading-tight">
+        <motion.p
+          className="text-xl font-light text-black mb-12 max-w-[680px] mx-auto leading-tight"
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.7 }}
+          transition={{ duration: reduceMotion ? 0 : 0.5, ease: "easeOut", delay: reduceMotion ? 0 : 0.05 }}
+        >
           Everyone is welcome at Bei Capelli Kapper Bennekom. Make an appointment in advance to avoid
           disappointment, that way, you&#39;ll always have your spot when it suits you best.
-        </p>
+        </motion.p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-12 gap-x-12">
-          {items.map(({ id, Icon, title, description, pClass }) => (
-            <div key={id} className="flex flex-col items-center text-center ">
+          {items.map(({ id, Icon, title, description, pClass }, idx) => (
+            <motion.div
+              key={id}
+              className="flex flex-col items-center text-center "
+              initial={{ opacity: 0, y: 14 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.35 }}
+              transition={{ duration: reduceMotion ? 0 : 0.5, ease: "easeOut", delay: reduceMotion ? 0 : Math.min(idx * 0.05, 0.25) }}
+            >
               <Icon className="h-9 w-9 text-black mb-4" />
               <h3 className="font-medium text-4xl mb-2 text-black">{title}</h3>
               {typeof description === "string" ? (
@@ -92,7 +115,7 @@ const WelcomeSection = () => {
                 // description may already include its own element (for pre-line or spans)
                 <div className={pClass ?? "text-xl font-light text-black"}>{description}</div>
               )}
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react"
 import type { CarouselApi } from "@/components/ui/carousel"
 import { Calendar, RotateCcw } from "lucide-react"
 import Image from "next/image"
+import { motion, useReducedMotion } from "framer-motion"
 import {
   Carousel,
   CarouselContent,
@@ -81,6 +82,40 @@ const teamMembers = [
 
 export default function TeamMembersSection() {
   const [api, setApi] = useState<CarouselApi | null>(null)
+  const reduceMotion = useReducedMotion()
+
+  // Animation variants
+  const headerContainer = {
+    hidden: { opacity: 0, y: 16 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: reduceMotion ? 0 : 0.6,
+        ease: "easeOut",
+        when: "beforeChildren",
+        staggerChildren: reduceMotion ? 0 : 0.06,
+      },
+    },
+  } as const
+
+  const headerItem = {
+    hidden: { opacity: 0, y: 12 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: reduceMotion ? 0 : 0.5, ease: "easeOut" },
+    },
+  } as const
+
+  const card = {
+    hidden: { opacity: 0, y: 16 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: reduceMotion ? 0 : 0.5, ease: "easeOut" },
+    },
+  } as const
 
   // Track selection internally without unused state to satisfy eslint
   useEffect(() => {
@@ -101,12 +136,23 @@ export default function TeamMembersSection() {
   return (
     <section className="py-14 sm:py-24 md:py-32 lg:py-48 xl:py-[15.625rem] px-4 xl:px-0">
       <div className="max-w-[79.062rem] mx-auto">
-        <div className="mb-12">
-          <h2 className="text-4xl lg:text-[2.875rem] text-black mb-4 lg:mb-0">ONTMOET ONZE TOPSTYLISTEN</h2>
-          <p className="text-black text-base lg:text-xl font-light leading-tight max-w-[70.375rem]">
+        <motion.div
+          className="mb-12"
+          variants={headerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.5 }}
+        >
+          <motion.h2 variants={headerItem} className="text-4xl lg:text-[2.875rem] text-black mb-4 lg:mb-0">
+            ONTMOET ONZE TOPSTYLISTEN
+          </motion.h2>
+          <motion.p
+            variants={headerItem}
+            className="text-black text-base lg:text-xl font-light leading-tight max-w-[70.375rem]"
+          >
             De topstylisten van Bei Capelli Kapper Bennekom zorgen ervoor dat iedereen de aandacht krijgt die het verdient man, vrouw of kind en in iedere leeftijd, dat maakt ons niets uit. Wij luisteren aandachtig naar je wensen en onder het genot van onze heerlijke koffie geven wij het advies wat het beste bij je past. Ook willen wij je graag kennis laten maken met de producten waar wij mee werken en die zeer hoog aangeschreven staan. Nieuwsgierig? Loop eens binnen, wij zijn u graag van dienst!
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
         <Carousel
           className="relative pb-11"
@@ -119,7 +165,12 @@ export default function TeamMembersSection() {
                 key={index}
                 className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
               >
-                <div>
+                <motion.div
+                  variants={card}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, amount: 0.5 }}
+                >
                   <div className="mb-5.5 h-[28.3125rem] w-full relative">
                     <Image
                       src={member.image || "/placeholder.svg"}
@@ -157,7 +208,7 @@ export default function TeamMembersSection() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               </CarouselItem>
             ))}
           </CarouselContent>

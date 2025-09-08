@@ -4,6 +4,7 @@ import React from "react"
 import useEmblaCarousel from "embla-carousel-react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { motion, useReducedMotion } from "framer-motion"
 
 const services = [
   {
@@ -75,6 +76,7 @@ const services = [
 ]
 
 function ServicesCarousel({ title }: { title?: string }) {
+  const reduceMotion = useReducedMotion()
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "start",
     slidesToScroll: 1,
@@ -88,15 +90,28 @@ function ServicesCarousel({ title }: { title?: string }) {
     <div className="relative">
       <div className="max-w-[79.0625rem] px-4 xl:px-0 mx-auto overflow-visible">
         {title && (
-            <h2 className="text-4xl md:text-5xl font-normal text-black mb-10.5">{title}</h2>
+          <motion.h2
+            className="text-4xl md:text-5xl font-normal text-black mb-10.5"
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.6 }}
+            transition={{ duration: reduceMotion ? 0 : 0.6, ease: "easeOut" }}
+          >
+            {title}
+          </motion.h2>
         )}
 
   <div className="overflow-hidden md:overflow-visible w-full  md:w-[calc((100vw+1265px)/2)]" ref={emblaRef}>
           <div className="flex gap-4 sm:gap-0">
           {services.map((service, index) => (
-            <div
+            <motion.div
               key={index}
-              className="flex-none w-full md:w-[min(86vw,513px)] md:mr-6 border border-black/40 p-8 md:p-[1.5625rem] flex flex-col">
+              className="flex-none w-full md:w-[min(86vw,513px)] md:mr-6 border border-black/40 p-8 md:p-[1.5625rem] flex flex-col"
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: reduceMotion ? 0 : 0.5, ease: "easeOut" }}
+            >
               <div className="min-h-[3.5rem] md:min-h-[5.5rem] mb-8">
                 <h3 className="text-2xl md:text-4xl font-light text-black whitespace-pre-line leading-tight">{service.title}</h3>
               </div>
@@ -125,19 +140,25 @@ function ServicesCarousel({ title }: { title?: string }) {
                   </div>
                 ))}
               </div>
-            </div>
+            </motion.div>
           ))}
           </div>
         </div>
 
-        <div className="flex justify-end gap-4 mt-8 pr-8">
+        <motion.div
+          className="flex justify-end gap-4 mt-8 pr-8"
+          initial={{ opacity: 0, y: 8 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.6 }}
+          transition={{ duration: reduceMotion ? 0 : 0.4, ease: "easeOut" }}
+        >
           <Button variant="ghost" size="icon" onClick={scrollPrev} className="text-black hover:bg-black/10 rounded-none">
             <ChevronLeft className="h-6 w-6" />
           </Button>
           <Button variant="ghost" size="icon" onClick={scrollNext} className="text-black hover:bg-black/10 rounded-none">
             <ChevronRight className="h-6 w-6" />
           </Button>
-        </div>
+        </motion.div>
       </div>
     </div>
   )

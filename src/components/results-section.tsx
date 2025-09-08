@@ -10,6 +10,7 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel"
 import { ArrowLeft, ArrowRight } from "lucide-react"
+import { motion, useReducedMotion } from "framer-motion"
 
 const cards = [
   {
@@ -30,6 +31,7 @@ export default function ResultsSection() {
   const [api, setApi] = React.useState<CarouselApi | null>(null)
   const [canPrev, setCanPrev] = React.useState(false)
   const [canNext, setCanNext] = React.useState(false)
+  const reduceMotion = useReducedMotion()
 
   React.useEffect(() => {
     if (!api) return
@@ -54,9 +56,12 @@ export default function ResultsSection() {
             <CarouselContent>
               {cards.map((card, idx) => (
                 <CarouselItem key={idx}>
-                  <article
+                  <motion.article
                     className="border border-gray-700 bg-transparent"
-                   
+                    initial={{ opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.6 }}
+                    transition={{ duration: reduceMotion ? 0 : 0.5, ease: "easeOut" }}
                   >
                     <div className="w-full h-64 relative">
                       <Image
@@ -84,13 +89,19 @@ export default function ResultsSection() {
                         Meer Informatie
                       </Button>
                     </div>
-                  </article>
+                  </motion.article>
                 </CarouselItem>
               ))}
             </CarouselContent>
           </Carousel>
           {/* Bottom navigation buttons */}
-          <div className="mt-4 flex items-center justify-center gap-3">
+          <motion.div
+            className="mt-4 flex items-center justify-center gap-3"
+            initial={{ opacity: 0, y: 8 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.6 }}
+            transition={{ duration: reduceMotion ? 0 : 0.4, ease: "easeOut" }}
+          >
             <Button
               variant="outline"
               size="icon"
@@ -111,15 +122,19 @@ export default function ResultsSection() {
             >
               <ArrowRight />
             </Button>
-          </div>
+          </motion.div>
         </div>
 
         {/* Desktop: Grid (no carousel) */}
         <div className="hidden md:grid grid-cols-2 gap-8">
           {cards.map((card, idx) => (
-            <article
+            <motion.article
               key={idx}
               className="border border-gray-700 bg-transparent"
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: reduceMotion ? 0 : 0.5, ease: "easeOut" }}
             >
               <div className="w-full h-72 relative">
                 <Image
@@ -147,7 +162,7 @@ export default function ResultsSection() {
                   Meer Informatie
                 </Button>
               </div>
-            </article>
+            </motion.article>
           ))}
         </div>
       </div>
