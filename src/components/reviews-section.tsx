@@ -4,6 +4,7 @@ import useEmblaCarousel from "embla-carousel-react"
 import { ChevronLeft, ChevronRight, Star, Edit } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
+import { motion, useReducedMotion } from "framer-motion"
 
 const reviews = [
   {
@@ -54,6 +55,7 @@ const reviews = [
 ]
 
 export function ReviewsCarousel() {
+  const reduceMotion = useReducedMotion()
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "start",
     containScroll: "trimSnaps",
@@ -72,7 +74,13 @@ export function ReviewsCarousel() {
       <div className="flex pl-0 gap-4 sm:gap-6">
             {reviews.map((review) => (
         <div key={review.id} className="flex-[0_0_100%] sm:flex-[0_0_404px]">
-                <div className="border border-gray-400 px-10 pt-6.5 pb-8.5 h-full min-h-[450px] flex flex-col bg-transparent">
+                <motion.div
+                  className="border border-gray-400 px-10 pt-6.5 pb-8.5 h-full min-h-[450px] flex flex-col bg-transparent"
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: reduceMotion ? 0 : 0.5, ease: "easeOut" }}
+                >
                   {/* Star Rating */}
                   <div className="flex mb-4">
                     {[...Array(5)].map((_, i) => (
@@ -97,7 +105,7 @@ export function ReviewsCarousel() {
                       <p className="text-black text-base font-light">{review.date}</p>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               </div>
             ))}
           </div>
@@ -105,14 +113,20 @@ export function ReviewsCarousel() {
       </div>
 
   {/* Bottom Section with Button and Navigation - aligned with 78.5rem container */}
-  <div className="max-w-[78.5rem] mx-auto flex items-center justify-between mt-8 overflow-visible">
+  <motion.div
+    className="max-w-[78.5rem] mx-auto flex items-center justify-between mt-8 overflow-visible"
+    initial={{ opacity: 0, y: 10 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true, amount: 0.6 }}
+    transition={{ duration: reduceMotion ? 0 : 0.4, ease: "easeOut" }}
+  >
         {/* Place Review Button */}
         <Button
           variant="outline"
           className="border-black text-black hover:bg-black hover:text-white transition-colors bg-transparent rounded-none flex items-center text-xl font-light gap-2 !px-6 !py-6"
         >
           <Edit className="w-5 h-5" />
-          Plaats enn Review
+          Plaats een Review
         </Button>
 
         {/* Navigation Arrows */}
@@ -136,19 +150,28 @@ export function ReviewsCarousel() {
             <ChevronRight className="w-6 h-6 text-black" />
           </Button>
         </div>
-      </div>
+  </motion.div>
     </div>
   )
 }
 
 export default function ReviewsSection() {
+  const reduceMotion = useReducedMotion()
   return (
     /* Reviews Section */
     <section className=" px-4 xl:px-0">
       {/* Section Header aligned with content container */}
       <div className="mb-6">
         <div className="max-w-[78.5rem] mx-auto">
-          <h2 className="text-4xl md:text-5xl text-black ">REVIEWS</h2>
+          <motion.h2
+            className="text-4xl md:text-5xl text-black "
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.6 }}
+            transition={{ duration: reduceMotion ? 0 : 0.6, ease: "easeOut" }}
+          >
+            REVIEWS
+          </motion.h2>
         </div>
       </div>
 
