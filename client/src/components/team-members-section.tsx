@@ -4,7 +4,8 @@ import React, { useState, useEffect } from "react"
 import type { CarouselApi } from "@/components/ui/carousel"
 import { Calendar, RotateCcw } from "lucide-react"
 import Image from "next/image"
-import { motion, useReducedMotion } from "framer-motion"
+import { motion } from "framer-motion"
+import { useReducedMotion } from "@/hooks/useReducedMotion"
 import {
   Carousel,
   CarouselContent,
@@ -13,74 +14,14 @@ import {
   CarouselNext,
 } from "@/components/ui/carousel"
 
-const teamMembers = [
-  {
-    name: "SANDRA",
-    role: "(Owner)",
-    image: "/images/team-member-1.png",
-    availability: "Tuesday, Thursday, Saturday",
-    schedule: "Every other Wednesday",
-    highlighted: false,
-  },
-  {
-    name: "LIZZY",
-    role: "(Stylist)",
-    image: "/images/team-member-2.png",
-    availability: "Tuesday, Thursday, Saturday",
-    schedule: "Every other Wednesday",
-    highlighted: false,
-  },
-  {
-    name: "CYNTHIA",
-    role: "(Stylist)",
-    image: "/images/team-member-3.png",
-    availability: "Tuesday, Thursday, Saturday",
-    schedule: "Every other Wednesday",
-    highlighted: false,
-  },
-  {
-    name: "JOYCE",
-    role: "(Stylist)",
-    image: "/images/team-member-4.png",
-    availability: "Tuesday, Thursday, Saturday",
-    schedule: "Every other Wednesday",
-    highlighted: false,
-  },
-  {
-    name: "MARIA",
-    role: "(Stylist)",
-    image: "/images/team-member-1.png",
-    availability: "Monday, Wednesday, Friday",
-    schedule: "Every other Tuesday",
-    highlighted: false,
-  },
-  {
-    name: "ANNA",
-    role: "(Stylist)",
-    image: "/images/team-member-2.png",
-    availability: "Wednesday, Friday, Sunday",
-    schedule: "Every other Monday",
-    highlighted: false,
-  },
-  {
-    name: "SOPHIE",
-    role: "(Colorist)",
-    image: "/images/team-member-3.png",
-    availability: "Tuesday, Thursday, Saturday",
-    schedule: "Every other Friday",
-    highlighted: false,
-  },
-  {
-    name: "EMMA",
-    role: "(Stylist)",
-    image: "/images/team-member-4.png",
-    availability: "Monday, Wednesday, Friday",
-    schedule: "Every other Thursday",
-    highlighted: false,
-  },
-]
+import { TeamMemberData } from "@/types/strapi"
+import { getTeamMemberData, parseRichText } from "@/lib/api"
 
-export default function TeamMembersSection() {
+interface TeamMembersSectionProps {
+  teamData: TeamMemberData
+}
+
+export default function TeamMembersSection({ teamData }: TeamMembersSectionProps) {
   const [api, setApi] = useState<CarouselApi | null>(null)
   const reduceMotion = useReducedMotion()
 
@@ -144,13 +85,13 @@ export default function TeamMembersSection() {
           viewport={{ once: true, amount: 0.5 }}
         >
           <motion.h2 variants={headerItem} className="text-4xl lg:text-[2.875rem] text-black mb-4 lg:mb-0">
-            ONTMOET ONZE TOPSTYLISTEN
+            {teamData.Title}
           </motion.h2>
           <motion.p
             variants={headerItem}
             className="text-black text-base lg:text-xl font-light leading-tight max-w-[70.375rem]"
           >
-            De topstylisten van Bei Capelli Kapper Bennekom zorgen ervoor dat iedereen de aandacht krijgt die het verdient man, vrouw of kind en in iedere leeftijd, dat maakt ons niets uit. Wij luisteren aandachtig naar je wensen en onder het genot van onze heerlijke koffie geven wij het advies wat het beste bij je past. Ook willen wij je graag kennis laten maken met de producten waar wij mee werken en die zeer hoog aangeschreven staan. Nieuwsgierig? Loop eens binnen, wij zijn u graag van dienst!
+            {teamData.Description}
           </motion.p>
         </motion.div>
 
@@ -160,9 +101,11 @@ export default function TeamMembersSection() {
           setApi={(embla) => setApi(embla)}
         >
           <CarouselContent className="-ml-4">
-            {teamMembers.map((member, index) => (
+            {teamData.TeamMember
+              .sort((a, b) => a.Order - b.Order)
+              .map((member) => (
               <CarouselItem
-                key={index}
+                key={member.id}
                 className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
               >
                 <motion.div
@@ -172,38 +115,49 @@ export default function TeamMembersSection() {
                   viewport={{ once: true, amount: 0.5 }}
                 >
                   <div className="mb-5.5 h-[28.3125rem] w-full relative">
-                    <Image
-                      src={member.image || "/placeholder.svg"}
-                      alt={member.name}
-                      fill
-                      className="object-cover"
-                    />
+                    {member.TeamMemberImage?.url && (
+                      <Image
+                        src={member.TeamMemberImage.url}
+                        alt={member.Name}
+                        fill
+                        className="object-cover"
+                      />
+                    )}
                   </div>
 
                   <div className="space-y-4">
                     <div className="text-center">
-                      <h3 className="text-3xl text-black leading-5">{member.name}</h3>
-                      <p className="text-black text-xl font-extralight leading-tight">{member.role}</p>
+                      <h3 className="text-3xl text-black leading-5">{member.Name.toUpperCase()}</h3>
+                      <p className="text-black text-xl font-extralight leading-tight">({member.Role})</p>
                     </div>
 
                     <div className="max-w-[12.625rem] mx-auto space-y-4">
                       <div className="flex items-start gap-3">
                         <div className="w-6 flex-none flex items-start justify-center pt-1">
-                          <Calendar className="w-5.5 h-5.5 text-black" />
+                          {teamData.CalendarIcon?.url ? (
+                            <Image src={teamData.CalendarIcon.url} alt="Calendar" width={22} height={22} className="w-5.5 h-5.5" />
+                          ) : (
+                            <Calendar className="w-5.5 h-5.5 text-black" />
+                          )}
                         </div>
                         <div className="flex-1">
-                          <p className="text-black text-lg">
-                            <span className="font-semibold">Available:</span> {member.availability}
-                          </p>
+                          <div 
+                            className="text-black text-lg"
+                            dangerouslySetInnerHTML={{ __html: parseRichText(member.Availability) }}
+                          />
                         </div>
                       </div>
 
                       <div className="flex items-start gap-3">
                         <div className="w-6 flex-none flex items-start justify-center pt-1">
-                          <RotateCcw className="w-5.5 h-5.5 text-black" />
+                          {teamData.ScheduleIcon?.url ? (
+                            <Image src={teamData.ScheduleIcon.url} alt="Schedule" width={22} height={22} className="w-5.5 h-5.5" />
+                          ) : (
+                            <RotateCcw className="w-5.5 h-5.5 text-black" />
+                          )}
                         </div>
                         <div className="flex-1">
-                          <p className="text-black text-base font-extralight">{member.schedule}</p>
+                          <p className="text-black text-base font-extralight">{member.Schedule}</p>
                         </div>
                       </div>
                     </div>

@@ -5,69 +5,17 @@ import useEmblaCarousel from "embla-carousel-react"
 import { ChevronLeft, ChevronRight, ZoomIn, X } from "lucide-react"
 import { Button } from "./ui/button"
 import Image from "next/image"
-import { motion, useReducedMotion } from "framer-motion"
+import { motion } from "framer-motion"
+import { BeforeAfterSectionData } from "@/types/strapi"
+import { getBeforeAfterSectionData } from "@/lib/api"
+import { useReducedMotion } from "@/hooks/useReducedMotion"
 
-interface BeforeAfterItem {
-  id: string
-  category: string
-  title: string
-  description: string
-  benefits: string[]
-  beforeAfterImage: string
+interface BeforeAfterCarouselProps {
+  sectionData: BeforeAfterSectionData | null
+  loading: boolean
 }
 
-const beforeAfterData: BeforeAfterItem[] = [
-  {
-    id: "1",
-    category: "Stylen",
-    title: "Stylen",
-    description:
-      "See how our Glass Hair Treatment transforms unmanageable hair into a smooth, high-shine masterpiece. Ideal for any hair type needing a hydration boost and that Insta-g finish.",
-    benefits: ["Long-lasting Shine", "Anti-Frizz Technology", "Deep Hydration Boost", "Heat Protection included"],
-    beforeAfterImage: "/images/products-1.png",
-  },
-  {
-    id: "2",
-    category: "Kleuringen",
-    title: "Kleuringen",
-    description:
-      "Transform your look with our professional coloring services. From subtle highlights to dramatic color changes, our expert colorists create stunning results.",
-    benefits: [
-      "Professional Color Matching",
-      "Long-lasting Results",
-      "Hair Health Protection",
-      "Custom Color Consultation",
-    ],
-    beforeAfterImage: "/images/products-2.png",
-  },
-  {
-    id: "3",
-    category: "Knippen",
-    title: "Knippen",
-    description:
-      "Experience precision cutting techniques that enhance your natural features and lifestyle. Our stylists create cuts that grow out beautifully.",
-    benefits: [
-      "Precision Cutting Techniques",
-      "Face Shape Analysis",
-      "Lifestyle-Friendly Styles",
-      "Professional Styling Tips",
-    ],
-    beforeAfterImage: "/images/products-1.png",
-  },
-  {
-    id: "4",
-    category: "Stylen",
-    title: "Volume Styling",
-    description:
-      "Add incredible volume and texture to fine or flat hair with our specialized styling techniques and premium products.",
-    benefits: ["Volume Enhancement", "Texture Creation", "Long-lasting Hold", "Damage-Free Techniques"],
-    beforeAfterImage: "/images/products-2.png",
-  },
-]
-
-const filterOptions = ["All", "Kleuringen", "Stylen", "Knippen"]
-
-export function BeforeAfterCarousel() {
+export function BeforeAfterCarousel({ sectionData, loading }: BeforeAfterCarouselProps) {
   const [activeFilter, setActiveFilter] = useState("All")
   const [emblaRef, emblaApi] = useEmblaCarousel({
   // Mobile-first smooth scrolling similar to other carousels
@@ -121,11 +69,32 @@ export function BeforeAfterCarousel() {
     }
   }, [zoomSrc])
 
+  const beforeAfterData = sectionData?.beforeAfterItems || []
+  const filterOptions = sectionData?.filterOptions || ["All", "Kleuringen", "Stylen", "Knippen"]
+  
   const filteredData =
     activeFilter === "All" ? beforeAfterData : beforeAfterData.filter((item) => item.category === activeFilter)
 
   const scrollPrev = () => emblaApi && emblaApi.scrollPrev()
   const scrollNext = () => emblaApi && emblaApi.scrollNext()
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="w-full flex justify-center items-center py-20">
+        <div className="text-lg text-gray-600">Loading before & after items...</div>
+      </div>
+    )
+  }
+
+  // Show empty state
+  if (!sectionData || !beforeAfterData.length) {
+    return (
+      <div className="w-full flex justify-center items-center py-20">
+        <div className="text-lg text-gray-600">No before & after items available.</div>
+      </div>
+    )
+  }
 
   return (
     <div className="w-full">
@@ -292,8 +261,40 @@ export function BeforeAfterCarousel() {
 }
 
 export default function BeforeAndAfter() {
+  const [sectionData, setSectionData] = useState<BeforeAfterSectionData | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  // Fetch section data for title
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getBeforeAfterSectionData()
+        setSectionData(data)
+      } catch (error) {
+        console.error('Error fetching before after section data:', error)
+        setSectionData(null)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    fetchData()
+  }, [])
+
+  if (loading) {
+    return (
+      <section className="pt-14 sm:pt-24 md:pt-32 lg:pt-48 xl:pt-[15.625rem]">
+        <div className="max-w-7xl mx-auto px-8 mb-12">
+          <div className="text-center">
+            <div className="text-4xl md:text-[2.875rem] text-black">Loading...</div>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
   return (
-    <section className="pt-14 sm:pt-24 md:pt-32 lg:pt-48  xl:pt-[15.625rem]">
+    <section className="pt-14 sm:pt-24 md:pt-32 lg:pt-48 xl:pt-[15.625rem]">
       {/* Section Header with centered alignment */}
       <motion.div
         className="max-w-7xl mx-auto px-8 mb-12"
@@ -303,13 +304,15 @@ export default function BeforeAndAfter() {
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
         <div className="text-center">
-          <h2 className="text-4xl md:text-[2.875rem]  text-black">VOOR & NA</h2>
+          <h2 className="text-4xl md:text-[2.875rem] text-black">
+            {sectionData?.title || 'VOOR & NA'}
+          </h2>
         </div>
       </motion.div>
 
       {/* Before & After Carousel - constrained left column (1256px) but allows overflow to the right */}
       <div className="max-w-[1256px] mx-auto px-4 md:px-0 md:pl-8 !overflow-visible">
-        <BeforeAfterCarousel />
+        <BeforeAfterCarousel sectionData={sectionData} loading={loading} />
       </div>
     </section>
   )

@@ -2,38 +2,33 @@
 "use client"
 
 import React from 'react'
-import { MapPin, Phone, Mail, LucideIcon } from 'lucide-react'
-import { motion, useReducedMotion } from 'framer-motion'
+import Image from 'next/image'
+import { motion } from 'framer-motion'
+import { useReducedMotion } from '@/hooks/useReducedMotion'
+import { ContactSectionData, ContactCard } from '@/types/strapi'
 
-interface ContactCard {
-  icon: LucideIcon
-  title: string
-  content: string[]
+interface MapsContactProps {
+  data?: ContactSectionData
 }
 
-const MapsContact: React.FC = () => {
+const MapsContact: React.FC<MapsContactProps> = ({ data }) => {
   const reduceMotion = useReducedMotion()
-  const contactCards: ContactCard[] = [
-    {
-      icon: MapPin,
-      title: "Address",
-      content: [
-        "Bei Capelli Haarmode",
-        "Kerkstraat 4",
-        "6721 VA Bennekom"
-      ]
-    },
-    {
-      icon: Phone,
-      title: "Phone",
-      content: ["(0318) 57 61 70"]
-    },
-    {
-      icon: Mail,
-      title: "Email",
-      content: ["info@bei-capelli.nl"]
-    }
-  ]
+  
+  // Handle case where data is not provided
+  if (!data) {
+    return (
+      <div className="px-4 xl:px-0 relative">
+        <div className="relative max-w-[1256px] mx-auto">
+          <div className="w-full h-[420px] md:h-[500px] border border-black flex items-center justify-center">
+            <p className="text-xl font-light text-black">Loading contact section...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+  
+  // Sort contact cards by order
+  const sortedCards = data.contactCards?.sort((a, b) => a.order - b.order) || []
 
   return (
   <div className=" px-4 xl:px-0 relative">
@@ -45,7 +40,7 @@ const MapsContact: React.FC = () => {
         transition={{ duration: reduceMotion ? 0 : 0.6, ease: 'easeOut' }}
       >
       <iframe
-        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2446.8234567890123!2d5.6789012345678!3d51.9876543210987!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sBei%20Capelli%20Bennekom%2C%20Kerkstraat%204%2C%206721%20VA%20Bennekom%2C%20Netherlands!5e0!3m2!1sen!2snl!4v1234567890123!5m2!1sen!2snl"
+        src={data.mapEmbedUrl}
         width="100%"
         height="500"
         allowFullScreen
@@ -56,31 +51,36 @@ const MapsContact: React.FC = () => {
       </motion.div>
 
       <div className="relative mt-6 md:mt-0 md:absolute md:-bottom-40 md:left-4 md:right-4 flex flex-col sm:flex-row items-stretch md:justify-center gap-4 ">
-        {contactCards.map((card, index) => {
-          const IconComponent = card.icon
-          return (
-            <motion.div
-              key={index}
-              className="border border-black p-5 text-center w-full md:flex-1 md:max-w-[220px] bg-[#E0D7C9]"
-              initial={{ opacity: 0, y: 14 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.35 }}
-              transition={{ duration: reduceMotion ? 0 : 0.45, ease: 'easeOut', delay: reduceMotion ? 0 : index * 0.06 }}
-            >
-              <div className="flex justify-center mb-2">
-                <IconComponent className="w-13 h-13 text-black" />
+        {sortedCards.map((card: ContactCard, index: number) => (
+          <motion.div
+            key={card.id}
+            className="border border-black p-5 text-center w-full md:flex-1 md:max-w-[220px] bg-[#E0D7C9]"
+            initial={{ opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.35 }}
+            transition={{ duration: reduceMotion ? 0 : 0.45, ease: 'easeOut', delay: reduceMotion ? 0 : index * 0.06 }}
+          >
+            <div className="flex justify-center mb-2">
+              {card.icon && (
+                <Image
+                  src={card.icon.url}
+                  alt={card.icon.alternativeText || card.title}
+                  width={52}
+                  height={52}
+                  className="w-13 h-13"
+                />
+              )}
+            </div>
+            <h3 className="text-xl font-normal text-black mb-3.5">{card.title}</h3>
+            <div className="flex flex-col justify-center min-h-[60px]">
+              <div className="text-black text-base font-light text-center">
+                {card.content.map((line: string, lineIndex: number) => (
+                  <p key={lineIndex} className="text-center">{line}</p>
+                ))}
               </div>
-              <h3 className="text-xl font-normal text-black mb-3.5">{card.title}</h3>
-              <div className="flex flex-col justify-center min-h-[60px]">
-                <div className="text-black text-base font-light text-center">
-                  {card.content.map((line, lineIndex) => (
-                    <p key={lineIndex} className="text-center">{line}</p>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          )
-        })}
+            </div>
+          </motion.div>
+        ))}
       </div>
       </div>
     </div>

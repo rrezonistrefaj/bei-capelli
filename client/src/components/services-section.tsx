@@ -4,78 +4,16 @@ import React from "react"
 import useEmblaCarousel from "embla-carousel-react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { motion, useReducedMotion } from "framer-motion"
+import { motion } from "framer-motion"
+import { useReducedMotion } from "@/hooks/useReducedMotion"
+import { Service, ServicesSectionData } from "@/types/strapi"
 
-const services = [
-  {
-    title: "WASSEN, KNIPPEN\n& DROGEN",
-    sections: [
-      {
-        category: "Knippen & Stylen",
-        items: [
-          { service: "Knippen kinderen (t/m 12 jaar)", price: "€ 27,50" },
-          { service: "Knippen kinderen (t/m 12 jaar)", price: "€ 27,50" },
-          { service: "Knippen kinderen (t/m 12 jaar)", price: "€ 27,50" },
-        ],
-      },
-      {
-        category: "Wassen, Knippen & Stylen",
-        items: [
-          { service: "Wassen, knippen, drogen (heren)", price: "€ 27,50" },
-          { service: "Wassen, knippen, drogen (dames)", price: "€ 27,50" },
-          { service: "Wassen, knippen, föhnen (half lang haar)", price: "€ 27,50" },
-          { service: "Wassen, knippen, föhnen (lang haar)", price: "€ 27,50" },
-        ],
-      },
-    ],
-  },
-  {
-    title: "STYLING",
-    sections: [
-      {
-        category: "Knippen & Stylen",
-        items: [
-          { service: "Knippen kinderen (t/m 12 jaar)", price: "€ 27,50" },
-          { service: "Knippen kinderen (t/m 12 jaar)", price: "€ 27,50" },
-          { service: "Knippen kinderen (t/m 12 jaar)", price: "€ 27,50" },
-        ],
-      },
-      {
-        category: "Wassen, Knippen & Stylen",
-        items: [
-          { service: "Wassen, knippen, drogen (heren)", price: "€ 27,50" },
-          { service: "Wassen, knippen, drogen (dames)", price: "€ 27,50" },
-          { service: "Wassen, knippen, föhnen (half lang haar)", price: "€ 27,50" },
-          { service: "Wassen, knippen, föhnen (lang haar)", price: "€ 27,50" },
-        ],
-      },
-    ],
-  },
-  {
-    title: "KLEURINGEN",
-    sections: [
-      {
-        category: "Knippen & Stylen",
-        items: [
-          { service: "Knippen kinderen (t/m 12 jaar)", price: "€ 27,50" },
-          { service: "Knippen kinderen (t/m 12 jaar)", price: "€ 27,50" },
-          { service: "Knippen kinderen (t/m 12 jaar)", price: "€ 27,50" },
-        ],
-      },
-      {
-        category: "Wassen, Knippen & Stylen",
-        items: [
-          { service: "Wassen, knippen, drogen (heren)", price: "€ 27,50" },
-          { service: "Wassen, knippen, drogen (dames)", price: "€ 27,50" },
-          { service: "Wassen, knippen, föhnen (half lang haar)", price: "€ 27,50" },
-          { service: "Wassen, knippen, föhnen (lang haar)", price: "€ 27,50" },
-        ],
-      },
-    ],
-  },
-]
+interface ServicesCarouselProps {
+  servicesData: Service[]
+  title?: string
+}
 
-function ServicesCarousel({ title }: { title?: string }) {
+function ServicesCarousel({ servicesData, title }: ServicesCarouselProps) {
   const reduceMotion = useReducedMotion()
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "start",
@@ -103,9 +41,9 @@ function ServicesCarousel({ title }: { title?: string }) {
 
   <div className="overflow-hidden md:overflow-visible w-full  md:w-[calc((100vw+1265px)/2)]" ref={emblaRef}>
           <div className="flex gap-4 sm:gap-0">
-          {services.map((service, index) => (
+          {servicesData.map((service, index) => (
             <motion.div
-              key={index}
+              key={service.id}
               className="flex-none w-full md:w-[min(86vw,513px)] md:mr-6 border border-black/40 p-8 md:p-[1.5625rem] flex flex-col"
               initial={{ opacity: 0, y: 18 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -113,27 +51,27 @@ function ServicesCarousel({ title }: { title?: string }) {
               transition={{ duration: reduceMotion ? 0 : 0.5, ease: "easeOut" }}
             >
               <div className="min-h-[3.5rem] md:min-h-[5.5rem] mb-8">
-                <h3 className="text-2xl md:text-4xl font-light text-black whitespace-pre-line leading-tight">{service.title}</h3>
+                <h3 className="text-2xl md:text-4xl font-light text-black whitespace-pre-line leading-tight">{service.Title}</h3>
               </div>
 
               <div className="space-y-12.5">
-                {service.sections.map((section, sectionIndex) => (
-                  <div key={sectionIndex}>
+                {service.ServiceSection.map((section, sectionIndex) => (
+                  <div key={section.id}>
                     <div className="grid grid-cols-[1fr_auto] items-center gap-x-6 mb-4">
-                      <h4 className="text-lg sm:text-xl font-normal text-black">{section.category}</h4>
-                      <span className="text:lg sm:text-xl font-normal text-black">Prijs</span>
+                      <h4 className="text-lg sm:text-xl font-normal text-black">{section.Category}</h4>
+                      <span className="text:lg sm:text-xl font-normal text-black">{section.PriceLabel}</span>
                     </div>
 
                     <div>
-                      {section.items.map((item, itemIndex) => (
+                      {section.ServiceItem.map((item, itemIndex) => (
                         <div
-                          key={itemIndex}
+                          key={item.id}
                           className={`grid grid-cols-[1fr_auto] items-center gap-x-6 pt-3.5 ${
-                            itemIndex !== section.items.length - 1 ? "pb-3.5 border-b border-black/10" : "pb-0"
+                            itemIndex !== section.ServiceItem.length - 1 ? "pb-3.5 border-b border-black/10" : "pb-0"
                           }`}
                         >
-                          <span className="text-black text-lg sm:text-xl font-light">{item.service}</span>
-                          <span className="text-black text-lg sm:text-xl font-light">{item.price}</span>
+                          <span className="text-black text-lg sm:text-xl font-light">{item.Service}</span>
+                          <span className="text-black text-lg sm:text-xl font-light">{item.Price}</span>
                         </div>
                       ))}
                     </div>
@@ -164,11 +102,18 @@ function ServicesCarousel({ title }: { title?: string }) {
   )
 }
 
-export default function ServicesSection() {
+interface ServicesSectionProps {
+  servicesData: ServicesSectionData
+}
+
+export default function ServicesSection({ servicesData }: ServicesSectionProps) {
   return (
     <section>
       <div className=" w-full">
-        <ServicesCarousel title="BEHANDELING" />
+        <ServicesCarousel 
+          servicesData={servicesData.services} 
+          title={servicesData.Title} 
+        />
       </div>
     </section>
   )

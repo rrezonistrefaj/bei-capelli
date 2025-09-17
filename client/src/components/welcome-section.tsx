@@ -1,77 +1,22 @@
 "use client"
 
 import React from "react"
-import { HelpCircle, User, Monitor, Phone, Clock, Gift } from "lucide-react"
-import { motion, useReducedMotion } from "framer-motion"
+import Image from "next/image"
+import { motion } from "framer-motion"
+import { useReducedMotion } from "@/hooks/useReducedMotion"
+import { WelcomeSectionData, WelcomeItem } from "@/types/strapi"
+import { parseRichText } from "@/lib/api"
 
-const items: {
-  id: string
-  Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
-  title: string
-  description: React.ReactNode
-  pClass?: string
-}[] = [
-  {
-    id: "help",
-    Icon: HelpCircle,
-    title: "Need Help Booking?",
-    description: (
-      <>If you&#39;re unsure while booking, don&#39;t hesitate to contact us. We&#39;re happy to help!</>
-    ),
-  },
-  {
-    id: "new-client",
-    Icon: User,
-    title: "New Client?",
-    description: (
-      <>Are you visiting for the first time? Give us a call to book your appointment. After your first visit, we&#39;ll create an account for you so you can use our online system in the future.</>
-    ),
-  },
-  {
-    id: "online",
-    Icon: Monitor,
-    title: "Book Online Anytime",
-    description: (
-      <>You can make an appointment 24/7 online with a top stylist of your choice. After booking, you&#39;ll receive an SMS or email reminder 24 hours before your appointment.</>
-    ),
-  },
-  {
-    id: "cancel",
-    Icon: Phone,
-    title: "Need to Cancel or Reschedule?",
-    description: (
-      <>
-        Online bookings cannot be changed online. To cancel or reschedule, please call us in time at: <br />
-        <span className="font-medium">(0318) 57 61 70</span>
-      </>
-    ),
-  },
-  {
-    id: "standard",
-    Icon: Clock,
-    title: "Standard 40-Minute Treatments",
-    description: (
-      <p className="whitespace-pre-line">
-        To help us serve all clients efficiently, we kindly ask you to choose from our standard 40-minute treatments.
+interface WelcomeSectionProps {
+  data: WelcomeSectionData
+}
 
-For example: haircuts and/or coloring. Available times:
-09:00 / 09:40 / 10:20 / 11:00 / 11:40 / 13:20 / 14:00 / 14:40 / 15:20 / 16:00 / 16:40 / 18:20 / 19:00 / 19:40 / 20:20
-      </p>
-    ),
-    pClass: "text-sm text-black",
-  },
-  {
-    id: "returning",
-    Icon: Gift,
-    title: "Returning Clients",
-    description: (
-      <>Do you visit us regularly? Join our special program and enjoy exclusive deals, more value, and extra service.</>
-    ),
-  },
-]
-
-const WelcomeSection = () => {
+const WelcomeSection = ({ data }: WelcomeSectionProps) => {
   const reduceMotion = useReducedMotion()
+  
+  // Sort welcome items by order
+  const sortedItems = data.welcomeItems?.sort((a, b) => a.order - b.order) || []
+  
   return (
     <section className="pt-14 sm:pt-24 md:pt-32 lg:pt-48 xl:pt-[15.625rem] pb-[9.375rem]">
       <div className="max-w-[856px] mx-auto text-center px-6">
@@ -82,8 +27,12 @@ const WelcomeSection = () => {
           viewport={{ once: true, amount: 0.6 }}
           transition={{ duration: reduceMotion ? 0 : 0.6, ease: "easeOut" }}
         >
-          EVERYONE IS
-          <span className="block">WELCOME</span>
+          {data.title.split(' ').map((word, index, array) => {
+            if (index === array.length - 1) {
+              return <span key={index} className="block">{word}</span>
+            }
+            return word + ' '
+          })}
         </motion.h2>
 
         <motion.p
@@ -93,28 +42,35 @@ const WelcomeSection = () => {
           viewport={{ once: true, amount: 0.7 }}
           transition={{ duration: reduceMotion ? 0 : 0.5, ease: "easeOut", delay: reduceMotion ? 0 : 0.05 }}
         >
-          Everyone is welcome at Bei Capelli Kapper Bennekom. Make an appointment in advance to avoid
-          disappointment, that way, you&#39;ll always have your spot when it suits you best.
+          {data.description}
         </motion.p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-12 gap-x-12">
-          {items.map(({ id, Icon, title, description, pClass }, idx) => (
+          {sortedItems.map((item: WelcomeItem, idx: number) => (
             <motion.div
-              key={id}
-              className="flex flex-col items-center text-center "
+              key={item.id}
+              className="flex flex-col items-center text-center"
               initial={{ opacity: 0, y: 14 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.35 }}
               transition={{ duration: reduceMotion ? 0 : 0.5, ease: "easeOut", delay: reduceMotion ? 0 : Math.min(idx * 0.05, 0.25) }}
             >
-              <Icon className="h-9 w-9 text-black mb-4" />
-              <h3 className="font-medium text-4xl mb-2 text-black">{title}</h3>
-              {typeof description === "string" ? (
-                <p className={pClass ?? "text-xl font-light text-black"}>{description}</p>
-              ) : (
-                // description may already include its own element (for pre-line or spans)
-                <div className={pClass ?? "text-xl font-light text-black"}>{description}</div>
+              {item.icon && (
+                <div className="mb-4">
+                  <Image
+                    src={item.icon.url}
+                    alt={item.icon.alternativeText || item.title}
+                    width={60}
+                    height={60}
+                    className="h-15 w-15"
+                  />
+                </div>
               )}
+              <h3 className="font-medium text-4xl mb-2 text-black">{item.title}</h3>
+              <div 
+                className="text-xl font-light text-black"
+                dangerouslySetInnerHTML={{ __html: parseRichText(item.description) }}
+              />
             </motion.div>
           ))}
         </div>

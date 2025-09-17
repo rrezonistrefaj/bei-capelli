@@ -2,19 +2,22 @@
 
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
-import { motion, useReducedMotion } from "framer-motion"
+import { motion } from "framer-motion"
+import { HeroSectionData } from "@/types/strapi"
 
-export default function HeroSection() {
-  const reduceMotion = useReducedMotion()
+interface HeroSectionProps {
+  heroData: HeroSectionData | null
+}
 
+export default function HeroSection({ heroData }: HeroSectionProps) {
   const container = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        duration: reduceMotion ? 0 : 0.6,
+        duration: 0.6,
         when: "beforeChildren",
-        staggerChildren: reduceMotion ? 0 : 0.08,
+        staggerChildren: 0.08,
       },
     },
   } as const
@@ -24,22 +27,24 @@ export default function HeroSection() {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: reduceMotion ? 0 : 0.6, ease: "easeOut" },
+      transition: { duration: 0.6, ease: "easeOut" },
     },
   } as const
 
   return (
     <div className="min-h-screen relative">
       {/* Background Image (Next/Image) */}
-      <div className="absolute inset-0 -z-10">
-        <Image
-          src="/images/Hero-image.png"
-          alt="Salon background"
-          fill
-          className="object-cover object-center"
-          priority
-        />
-      </div>
+      {heroData?.backgroundImage?.url && (
+        <div className="absolute inset-0 -z-10">
+          <Image
+            src={heroData.backgroundImage.url}
+            alt={heroData.backgroundImage.alternativeText || ""}
+            fill
+            className="object-cover object-center"
+            priority
+          />
+        </div>
+      )}
 
       {/* Gradient Overlay for Header */}
 
@@ -58,21 +63,25 @@ export default function HeroSection() {
           >
             {/* Main Heading */}
             <motion.h1 variants={item} className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-normal text-black leading-none">
-              KAPPER<br/>
-              BENNEKOM
+              {heroData?.title?.split('\n').map((line, index) => (
+                <span key={index}>
+                  {line}
+                  {index < heroData.title.split('\n').length - 1 && <br />}
+                </span>
+              ))}
             </motion.h1>
             <motion.hr variants={item} className="w-full border-t-1 border-black/90 mb-6 sm:mb-8" />
             {/* Description Text */}
-            <motion.p variants={item} className="text-black text-lg sm:text-xl lg:text-2xl font-light mb-6 sm:mb-8  ">
-              Sinds 2014 is Bei Capelli Kapper Bennekom dé plek voor de laatste haar trends. Door de jaren hebben wij al
-              een heleboel fijne en trouwe klanten mogen verwelkomen. Iedereen wordt met speciale aandacht behandeld
-              door ervaren stylisten om uitmuntende kwaliteit en service te garanderen.
-            </motion.p>
+            <motion.div variants={item} className="text-black text-lg sm:text-xl lg:text-2xl font-light mb-6 sm:mb-8">
+              <p>
+                {heroData?.description}
+              </p>
+            </motion.div>
 
             {/* CTA Button */}
               <motion.div variants={item}>
                 <Button className="w-full sm:w-auto bg-black text-white hover:bg-gray-800 px-2.5 py-6 text-xl rounded-none font-medium transition-colors duration-200">
-                  Make an Appointment
+                  {heroData?.buttonText}
                 </Button>
               </motion.div>
           </motion.div>

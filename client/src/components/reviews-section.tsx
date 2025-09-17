@@ -4,7 +4,8 @@ import useEmblaCarousel from "embla-carousel-react"
 import { ChevronLeft, ChevronRight, Star, Edit } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
-import { motion, useReducedMotion } from "framer-motion"
+import { motion } from "framer-motion"
+import { useReducedMotion } from "@/hooks/useReducedMotion"
 
 const reviews = [
   {

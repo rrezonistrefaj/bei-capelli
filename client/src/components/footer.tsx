@@ -4,25 +4,46 @@ import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { motion, useReducedMotion } from 'framer-motion'
-
-const scheduleData = [
-  { day: 'Monday', hours: 'Gesloten' },
-  { day: 'Tuesday', hours: '09:00-21:00' },
-  { day: 'Wednesday', hours: '09:00-21:00' },
-  { day: 'Thursday', hours: '09:00-21:00' },
-  { day: 'Friday', hours: '09:00-21:00' },
-  { day: 'Saturday', hours: '09:00-21:00' },
-  { day: 'Sunday', hours: 'Gesloten' },
-]
+import { motion } from 'framer-motion'
+import { useReducedMotion } from '@/hooks/useReducedMotion'
+import { FooterData } from '@/types/strapi'
 
 const formFields = [
   { type: 'text', placeholder: 'Name', name: 'name' },
   { type: 'email', placeholder: 'Email', name: 'email' },
 ]
 
-export default function Footer() {
+interface FooterProps { data: FooterData }
+
+export default function Footer({ data }: FooterProps) {
   const reduceMotion = useReducedMotion()
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const form = e.currentTarget
+    const formData = new FormData(form)
+    const payload = {
+      name: String(formData.get('name') || ''),
+      email: String(formData.get('email') || ''),
+      message: String(formData.get('message') || ''),
+    }
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (res.ok) {
+        form.reset()
+      } else {
+        console.error('Submit failed')
+      }
+    } catch (err) {
+      console.error('Submit error', err)
+    }
+  }
   return (
     <>
     <footer className="pt-16 sm:pt-28 md:pt-56 lg:pt-60 xl:pt-[21.875rem] pb-14 sm:pb-24 md:pb-32 lg:pb-48  xl:pb-[15.625rem] px-4 xl:px-0">
@@ -40,11 +61,11 @@ export default function Footer() {
               <h3 className="text-xl font-normal text-black">Time</h3>
             </motion.div>
             <div className="space-y-4">
-              {scheduleData.map((item, index) => (
+              {data.scheduleBlock.schedule.map((item, index) => (
                 <motion.div 
-                  key={item.day}
+                  key={item.day + index}
                   className={`flex justify-between items-center ${
-                    index !== scheduleData.length - 1 ? 'border-b border-black/20 pb-4' : ''
+                    index !== data.scheduleBlock.schedule.length - 1 ? 'border-b border-black/20 pb-4' : ''
                   }`}
                   initial={{ opacity: 0, y: 8 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -67,7 +88,7 @@ export default function Footer() {
               viewport={{ once: true, amount: 0.6 }}
               transition={{ duration: reduceMotion ? 0 : 0.5, ease: 'easeOut' }}
             >
-              Have Questions ?
+              {data.formBlock.title}
             </motion.h3>
             <motion.p
               className="text-black text-xl font-light mb-5 text-center"
@@ -76,10 +97,10 @@ export default function Footer() {
               viewport={{ once: true, amount: 0.6 }}
               transition={{ duration: reduceMotion ? 0 : 0.45, ease: 'easeOut', delay: reduceMotion ? 0 : 0.05 }}
             >
-              Don&#39;t hesitate to contact us. We&#39;re happy to help!
+              {data.formBlock.description}
             </motion.p>
 
-            <form className="space-y-5">
+            <form className="space-y-5" onSubmit={handleSubmit}>
               {/* Name and Email Row */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {formFields.map((field, idx) => (
@@ -93,6 +114,7 @@ export default function Footer() {
                     <Input
                       type={field.type}
                       placeholder={field.placeholder}
+                      name={field.name}
                       className="bg-[#E6E4E1] border border-black rounded-none placeholder:text-black/60 text-black focus:border-black focus:ring-0 focus-visible:border-black focus-visible:ring-0 w-full px-4 py-[1.5625rem] !text-xl placeholder:!text-xl md:!text-xl"
                     />
                   </motion.div>
@@ -108,6 +130,7 @@ export default function Footer() {
               >
                 <Textarea
                   placeholder="Bericht"
+                  name="message"
                   rows={4}
                   className="bg-[#E6E4E1] border border-black rounded-none placeholder:text-black/60 text-black focus:border-black focus:ring-0 focus-visible:border-black focus-visible:ring-0 resize-none w-full px-4 pt-3 min-h-24 !text-xl placeholder:!text-xl md:!text-xl"
                 />
@@ -124,7 +147,7 @@ export default function Footer() {
                   type="submit"
                   className="w-full bg-transparent border border-black text-black text-xl font-light hover:bg-black hover:text-white transition-colors rounded-none py-[1.5625rem] "
                 >
-                  Versturen
+                  {data.formBlock.submitText}
                 </Button>
               </motion.div>
             </form>
@@ -137,8 +160,7 @@ export default function Footer() {
               viewport={{ once: true, amount: 0.8 }}
               transition={{ duration: reduceMotion ? 0 : 0.35, ease: 'easeOut', delay: reduceMotion ? 0 : 0.22 }}
             >
-              Wanneer je dit formulier gebruikt, ga je akkoord met de opslag en verwerking van jouw gegevens door
-              deze website.
+              {data.formBlock.privacyNotice}
             </motion.p>
           </div>
         </div>

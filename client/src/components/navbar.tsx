@@ -4,9 +4,15 @@ import { Button } from "@/components/ui/button"
 import React, { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { motion, useReducedMotion } from "framer-motion"
+import { motion } from "framer-motion"
+import { NavigationData } from "@/types/strapi"
+import { useReducedMotion } from "@/hooks/useReducedMotion"
 
-export default function Navbar() {
+interface NavbarProps {
+  navigationData: NavigationData
+}
+
+export default function Navbar({ navigationData }: NavbarProps) {
 	const [scrolled, setScrolled] = useState(false)
 	const [menuOpen, setMenuOpen] = useState(false)
 	const closeBtnRef = useRef<HTMLButtonElement | null>(null)
@@ -121,10 +127,10 @@ export default function Navbar() {
 				>
 					{/* Logo */}
 					<motion.div variants={itemVariants} className="flex items-center">
-						<Link href="/#home" className="flex items-center" aria-label="Go to home">
+						<Link href={navigationData.logoLinkURL} className="flex items-center" aria-label="Go to home">
 							<Image
-								src="/images/bei-capelli-logo.png"
-								alt="Bei Capelli Logo"
+								src={navigationData.logoImage.url}
+								alt={navigationData.logoAltText}
 								width={120}
 								height={28}
 								className="h-auto w-[110px] sm:w-[120px] object-contain"
@@ -135,21 +141,18 @@ export default function Navbar() {
 
 					{/* Desktop navigation (visible at xl and up) */}
 					<nav className="hidden xl:flex items-center gap-7 lg:gap-9">
-						{[
-							{ href: "/#home", label: "Home" },
-							{ href: "/#team-members", label: "Team Members" },
-							{ href: "/#services", label: "Services" },
-							{ href: "/#results", label: "Results" },
-							{ href: "/#products", label: "Products" },
-							{ href: "/#reviews", label: "Reviews" },
-							{ href: "/#contact", label: "Contact" },
-						].map((item) => (
-							<motion.div key={item.href} variants={itemVariants}>
-								<Link href={item.href} className="text-black hover:text-gray-600 transition-colors">
-									{item.label}
-								</Link>
-							</motion.div>
-						))}
+						{navigationData.NavigationItems
+							.sort((a, b) => a.Order - b.Order)
+							.map((item) => (
+								<motion.div key={item.id} variants={itemVariants}>
+									<Link 
+										href={item.URL} 
+										className="text-black hover:text-gray-600 transition-colors"
+									>
+										{item.label}
+									</Link>
+								</motion.div>
+							))}
 					</nav>
 
 					{/* Desktop CTA (visible at xl and up) */}
@@ -157,8 +160,15 @@ export default function Navbar() {
 						<Button
 							variant="outline"
 							className="border-black text-black bg-[#E6E4E1] hover:bg-black hover:text-white transition-colors rounded-none px-5 py-3"
+							asChild
 						>
-							Book now
+							<Link 
+								href={navigationData.navButton.buttonURL}
+								target={navigationData.navButton.openInNewTab ? "_blank" : undefined}
+								rel={navigationData.navButton.openInNewTab ? "noopener noreferrer" : undefined}
+							>
+								{navigationData.navButton.ButtonText}
+							</Link>
 						</Button>
 					</motion.div>
 
@@ -225,10 +235,10 @@ export default function Navbar() {
 					<div className="flex h-full flex-col">
 						{/* Top bar with logo */}
 						<div className="flex items-center justify-between px-4 py-4 border-b border-gray-200">
-							<Link href="/#home" className="flex items-center" aria-label="Go to home" onClick={closeMenu}>
+							<Link href={navigationData.logoLinkURL} className="flex items-center" aria-label="Go to home" onClick={closeMenu}>
 								<Image
-									src="/images/bei-capelli-logo.png"
-									alt="Bei Capelli Logo"
+									src={navigationData.logoImage.url}
+									alt={navigationData.logoAltText}
 									width={110}
 									height={26}
 									className="h-auto w-[110px] object-contain"
@@ -263,77 +273,34 @@ export default function Navbar() {
 						<nav className="flex-1 px-6 py-6 flex ">
 							<div className="w-full">
 							<ul className="space-y-6 text-xl text-center">
-								<li>
-									<Link
-										href="/#home"
-										className="block py-2 text-gray-900 hover:text-gray-600"
-										onClick={closeMenu}
-									>
-										Home
-									</Link>
-								</li>
-								<li>
-									<Link
-										href="/#team-members"
-										className="block py-2 text-gray-900 hover:text-gray-600"
-										onClick={closeMenu}
-									>
-										Team Members
-									</Link>
-								</li>
-								<li>
-									<Link
-										href="/#services"
-										className="block py-2 text-gray-900 hover:text-gray-600"
-										onClick={closeMenu}
-									>
-										Services
-									</Link>
-								</li>
-								<li>
-									<Link
-										href="/#results"
-										className="block py-2 text-gray-900 hover:text-gray-600"
-										onClick={closeMenu}
-									>
-										Results
-									</Link>
-								</li>
-								<li>
-									<Link
-										href="/#products"
-										className="block py-2 text-gray-900 hover:text-gray-600"
-										onClick={closeMenu}
-									>
-										Products
-									</Link>
-								</li>
-								<li>
-									<Link
-										href="/#reviews"
-										className="block py-2 text-gray-900 hover:text-gray-600"
-										onClick={closeMenu}
-									>
-										Reviews
-									</Link>
-								</li>
-								<li>
-									<Link
-										href="/#contact"
-										className="block py-2 text-gray-900 hover:text-gray-600"
-										onClick={closeMenu}
-									>
-										Contact
-									</Link>
-								</li>
+								{navigationData.NavigationItems
+									.sort((a, b) => a.Order - b.Order)
+									.map((item) => (
+										<li key={item.id}>
+											<Link
+												href={item.URL}
+												className="block py-2 text-gray-900 hover:text-gray-600"
+												onClick={closeMenu}
+											>
+												{item.label}
+											</Link>
+										</li>
+									))}
 							</ul>
 							<div className="mt-6 flex justify-center">
 								<Button
-									onClick={closeMenu}
 									variant="outline"
 									className="border-black text-black bg-[#E6E4E1] hover:bg-black hover:text-white transition-colors rounded-none px-5 py-3"
+									asChild
 								>
-									Book now
+									<Link 
+										href={navigationData.navButton.buttonURL}
+										target={navigationData.navButton.openInNewTab ? "_blank" : undefined}
+										rel={navigationData.navButton.openInNewTab ? "noopener noreferrer" : undefined}
+										onClick={closeMenu}
+									>
+										{navigationData.navButton.ButtonText}
+									</Link>
 								</Button>
 							</div>
 							</div>

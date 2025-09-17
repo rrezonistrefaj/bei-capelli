@@ -1,5 +1,7 @@
 import WelcomeSection from "@/components/welcome-section";
+import { getWelcomeSectionData } from "@/lib/api";
 
-export default function WelcomeAppointmentPage() {
-  return <WelcomeSection /> 
+export default async function WelcomeAppointmentPage() {
+  const data = await getWelcomeSectionData();
+  return <WelcomeSection data={data} />;
 }

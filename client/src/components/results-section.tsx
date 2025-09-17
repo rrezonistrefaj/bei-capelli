@@ -10,28 +10,76 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel"
 import { ArrowLeft, ArrowRight } from "lucide-react"
-import { motion, useReducedMotion } from "framer-motion"
+import { motion } from "framer-motion"
+import { useReducedMotion } from "@/hooks/useReducedMotion"
+import { getResultsSectionData } from "@/lib/api"
+import { ResultsSectionData, ResultCard } from "@/types/strapi"
 
-const cards = [
-  {
-    title: "GELEGENHEIDS MAKE-UP",
-    copy:
-      "Op de mooiste dag van je leven, je trouwdag, moet alles kloppen, moet jij stralen en heerlijk kunnen genieten. Daar helpen onze haar stylisten jouw graag bij. Zelfs een proefkapsel behoort tot de mogelijkheden om zo optimaal voorbereid te zijn op de grote dag.",
-    image: "/images/results-image-1.png",
-  },
-  {
-    title: "GELEGENHEIDS MAKE-UP",
-    copy:
-      "Op de mooiste dag van je leven, je trouwdag, moet alles kloppen, moet jij stralen en heerlijk kunnen genieten. Daar helpen onze haar stylisten jouw graag bij. Zelfs een proefkapsel behoort tot de mogelijkheden om zo optimaal voorbereid te zijn op de grote dag.",
-    image: "/images/results-image-2.png",
-  },
-]
+interface ResultsSectionProps {
+  data?: ResultsSectionData
+}
 
-export default function ResultsSection() {
+export default function ResultsSection({ data }: ResultsSectionProps) {
   const [api, setApi] = React.useState<CarouselApi | null>(null)
   const [canPrev, setCanPrev] = React.useState(false)
   const [canNext, setCanNext] = React.useState(false)
+  const [cards, setCards] = React.useState<Array<{
+    title: string
+    copy: string
+    image: string
+    buttonText: string
+    buttonUrl: string
+    buttonTarget: "_self" | "_blank"
+  }>>([])
+  const [isLoading, setIsLoading] = React.useState(!data)
+  const [error, setError] = React.useState<string | null>(null)
   const reduceMotion = useReducedMotion()
+
+  // Process Strapi data
+  React.useEffect(() => {
+    if (data?.ResultCard && Array.isArray(data.ResultCard)) {
+      const processedCards = data.ResultCard
+        .sort((a, b) => (a.Order || 0) - (b.Order || 0))
+        .map((card: ResultCard) => ({
+          title: card.Title,
+          copy: card.Description,
+          image: card.CardImage?.url || "/images/placeholder.png",
+          buttonText: card.ButtonText || "Meer Informatie",
+          buttonUrl: card.ButtonURL || "#",
+          buttonTarget: "_self" as const, // Default to _self since ButtonTarget doesn't exist in current structure
+        }))
+      setCards(processedCards)
+      setIsLoading(false)
+    } else if (!data) {
+      // If no data prop provided, fetch from Strapi
+      const fetchData = async () => {
+        try {
+          const strapiData = await getResultsSectionData()
+          if (strapiData?.ResultCard && Array.isArray(strapiData.ResultCard)) {
+            const processedCards = strapiData.ResultCard
+              .sort((a, b) => (a.Order || 0) - (b.Order || 0))
+              .map((card: ResultCard) => ({
+                title: card.Title,
+                copy: card.Description,
+                image: card.CardImage?.url || "/images/placeholder.png",
+                buttonText: card.ButtonText || "Meer Informatie",
+                buttonUrl: card.ButtonURL || "#",
+                buttonTarget: "_self" as const, // Default to _self since ButtonTarget doesn't exist in current structure
+              }))
+            setCards(processedCards)
+          } else {
+            setError("No results data available")
+          }
+        } catch (error) {
+          console.error("Error fetching results data:", error)
+          setError("Failed to load results data")
+        } finally {
+          setIsLoading(false)
+        }
+      }
+      fetchData()
+    }
+  }, [data])
 
   React.useEffect(() => {
     if (!api) return
@@ -46,6 +94,56 @@ export default function ResultsSection() {
       api.off("select", onSelect)
     }
   }, [api])
+
+  // Handle button click - always open in new page
+  const handleButtonClick = (buttonUrl: string, buttonTarget: string) => {
+    if (buttonUrl && buttonUrl !== "#") {
+      // Always open in new tab/page
+      window.open(buttonUrl, "_blank", "noopener,noreferrer")
+    } else {
+      // If URL is "#" or empty, just prevent default and show a message
+      console.log("Button clicked but no URL configured")
+    }
+  }
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <section className="px-4 xl:px-0">
+        <div className="max-w-[1265px] mx-auto">
+          <div className="flex items-center justify-center py-20">
+            <div className="text-gray-600">Loading results...</div>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <section className="px-4 xl:px-0">
+        <div className="max-w-[1265px] mx-auto">
+          <div className="flex items-center justify-center py-20">
+            <div className="text-red-600">{error}</div>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  // Show empty state if no cards
+  if (!cards || cards.length === 0) {
+    return (
+      <section className="px-4 xl:px-0">
+        <div className="max-w-[1265px] mx-auto">
+          <div className="flex items-center justify-center py-20">
+            <div className="text-gray-600">No results available</div>
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section className=" px-4 xl:px-0">
@@ -84,9 +182,19 @@ export default function ResultsSection() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="border border-gray-700 text-gray-800 text-xl font-light hover:bg-transparent rounded-none px-10.5 py-5.5"
+                        className={`border text-gray-800 text-xl font-light hover:bg-transparent rounded-none px-10.5 py-5.5 transition-colors ${
+                          card.buttonUrl && card.buttonUrl !== "#" 
+                            ? "border-gray-700 cursor-pointer hover:border-gray-900" 
+                            : "border-gray-400 cursor-not-allowed opacity-60"
+                        }`}
+                        onClick={() => handleButtonClick(card.buttonUrl, card.buttonTarget)}
+                        disabled={!card.buttonUrl || card.buttonUrl === "#"}
+                        title={card.buttonUrl && card.buttonUrl !== "#" ? "Opens in new page" : "No link configured"}
                       >
-                        Meer Informatie
+                        {card.buttonText}
+                        {card.buttonUrl && card.buttonUrl !== "#" && (
+                          <span className="ml-2 text-sm">↗</span>
+                        )}
                       </Button>
                     </div>
                   </motion.article>
@@ -157,9 +265,19 @@ export default function ResultsSection() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="border border-gray-700 text-gray-800 text-xl font-light hover:bg-transparent rounded-none px-10.5 py-5.5"
+                  className={`border text-gray-800 text-xl font-light hover:bg-transparent rounded-none px-10.5 py-5.5 transition-colors ${
+                    card.buttonUrl && card.buttonUrl !== "#" 
+                      ? "border-gray-700 cursor-pointer hover:border-gray-900" 
+                      : "border-gray-400 cursor-not-allowed opacity-60"
+                  }`}
+                  onClick={() => handleButtonClick(card.buttonUrl, card.buttonTarget)}
+                  disabled={!card.buttonUrl || card.buttonUrl === "#"}
+                  title={card.buttonUrl && card.buttonUrl !== "#" ? "Opens in new page" : "No link configured"}
                 >
-                  Meer Informatie
+                  {card.buttonText}
+                  {card.buttonUrl && card.buttonUrl !== "#" && (
+                    <span className="ml-2 text-sm">↗</span>
+                  )}
                 </Button>
               </div>
             </motion.article>

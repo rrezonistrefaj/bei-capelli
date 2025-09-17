@@ -1,11 +1,16 @@
 import Footer from "@/components/footer";
 import MapsContact from "@/components/maps-contact";
+import { getContactSectionData, getFooterData } from "@/lib/api";
 
-const ContactPage = () => {
+const ContactPage = async () => {
+  const [contactData, footerData] = await Promise.all([
+    getContactSectionData(),
+    getFooterData(),
+  ])
   return (
     <>
-      <MapsContact />
-      <Footer />
+      <MapsContact data={contactData} />
+      <Footer data={footerData} />
     </>
   )
 }

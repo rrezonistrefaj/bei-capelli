@@ -1,13 +1,33 @@
 "use client"
 
 import React from "react"
-import { ShoppingCart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
-import { motion, useReducedMotion } from "framer-motion"
+import { motion } from "framer-motion"
+import { useReducedMotion } from "@/hooks/useReducedMotion"
+import { ProductSectionData } from "@/types/strapi"
 
-export default function ProductsSection() {
+interface ProductsSectionProps {
+  data: ProductSectionData
+}
+
+export default function ProductsSection({ data }: ProductsSectionProps) {
   const reduceMotion = useReducedMotion()
+  
+  // Parse rich text description into paragraphs
+  const parseDescription = (description: ProductSectionData['Description']) => {
+    return description
+      .filter(block => block.type === 'paragraph' && block.children.some(child => child.text.trim() !== ''))
+      .map(block => 
+        block.children
+          .map(child => child.text)
+          .join('')
+          .trim()
+      )
+      .filter(text => text !== '')
+  }
+  
+  const descriptionParagraphs = parseDescription(data.Description)
   return (
     <section className=" px-4 xl:px-0">
       <div className="max-w-[1256px] mx-auto">
@@ -21,42 +41,25 @@ export default function ProductsSection() {
               viewport={{ once: true, amount: 0.6 }}
               transition={{ duration: reduceMotion ? 0 : 0.6, ease: "easeOut" }}
             >
-              WIJ WERKEN
-              <br />
-              MET OOLABOO
+              {data.Title}
             </motion.h2>
 
             <div className="mt-6 text-xl text-neutral-800 space-y-7 leading-tight max-w-[618px]">
-              <motion.p
-                initial={{ opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.7 }}
-                transition={{ duration: reduceMotion ? 0 : 0.5, ease: "easeOut" }}
-              >
-                Oolaboo haarverzorgingsproducten hebben niet alleen een luxeuze beleving maar werken veel
-                resultaat gerichter dan andere merken. De rijke romige en natuurlijke samenstelling van de
-                producten voeden op ongelooflijke wijze ons haar en onze hoofdhuid.
-              </motion.p>
-
-              <motion.p
-                initial={{ opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.7 }}
-                transition={{ duration: reduceMotion ? 0 : 0.5, ease: "easeOut", delay: reduceMotion ? 0 : 0.05 }}
-              >
-                Deze producten zijn Sodium Laureth Sulfaat vrij en 100% parabenvrij. Alle producten zijn
-                dierproefvrij en dat wordt aangetoond door het Leaping Bunny logo op alle Oolaboo producten.
-              </motion.p>
-
-              <motion.p
-                initial={{ opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.7 }}
-                transition={{ duration: reduceMotion ? 0 : 0.5, ease: "easeOut", delay: reduceMotion ? 0 : 0.1 }}
-              >
-                Oolaboo haarverzorging bevat adequate nutriënten (superfoodies) bedoeld om alle tekenen van
-                veroudering van het haar en hoofdhuid te behandelen.
-              </motion.p>
+              {descriptionParagraphs.map((paragraph, index) => (
+                <motion.p
+                  key={index}
+                  initial={{ opacity: 0, y: 12 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.7 }}
+                  transition={{ 
+                    duration: reduceMotion ? 0 : 0.5, 
+                    ease: "easeOut", 
+                    delay: reduceMotion ? 0 : 0.05 * index 
+                  }}
+                >
+                  {paragraph}
+                </motion.p>
+              ))}
 
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -64,9 +67,20 @@ export default function ProductsSection() {
                 viewport={{ once: true, amount: 0.7 }}
                 transition={{ duration: reduceMotion ? 0 : 0.45, ease: "easeOut", delay: reduceMotion ? 0 : 0.15 }}
               >
-                <Button variant="ghost" size="sm" className="border border-gray-700 text-gray-800 text-xl font-light hover:bg-transparent rounded-none px-12 py-5.5">
-                  <ShoppingCart className="w-5 h-5 " />
-                  Webshop
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="border border-gray-700 text-gray-800 text-xl font-light rounded-none px-4 py-5.5 cursor-pointer"
+                  onClick={() => window.open(data.ButtonURL, '_blank')}
+                >
+                  <Image
+                    src={data.ButtonIcon.url}
+                    alt={data.ButtonIcon.alternativeText || "Button icon"}
+                    width={20}
+                    height={20}
+                    className="w-5 h-5 "
+                  />
+                  {data.ButtonText}
                 </Button>
               </motion.div>
             </div>
@@ -82,10 +96,10 @@ export default function ProductsSection() {
                 transition={{ duration: reduceMotion ? 0 : 0.5, ease: "easeOut" }}
               >
                 <Image
-                  src="/images/product-logo.png"
-                  alt="Oolaboo logo"
-                  width={220}
-                  height={80}
+                  src={data.ProductLogo.url}
+                  alt={data.ProductLogo.alternativeText || "Oolaboo logo"}
+                  width={data.ProductLogo.width || 220}
+                  height={data.ProductLogo.height || 80}
                   className="w-[220px] mb-6 h-auto object-contain"
                   priority
                 />
@@ -99,10 +113,10 @@ export default function ProductsSection() {
                 transition={{ duration: reduceMotion ? 0 : 0.6, ease: "easeOut", delay: reduceMotion ? 0 : 0.05 }}
               >
                 <Image
-                  src="/images/product-1.png"
-                  alt="Oolaboo products"
-                  width={600}
-                  height={600}
+                  src={data.ProductImage.url}
+                  alt={data.ProductImage.alternativeText || "Oolaboo products"}
+                  width={data.ProductImage.width || 600}
+                  height={data.ProductImage.height || 600}
                   className="w-[420px] md:w-[520px] lg:w-[600px] h-auto object-contain"
                 />
                 {/* subtle shadow under products to mimic design */}
