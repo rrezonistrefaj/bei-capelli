@@ -10,12 +10,6 @@ const nextConfig: NextConfig = {
         port: '1337',
         pathname: '/uploads/**',
       },
-      // Production - replace with your actual Strapi domain
-      {
-        protocol: 'https',
-        hostname: 'your-strapi-domain.com',
-        pathname: '/uploads/**',
-      },
     ],
   },
 };

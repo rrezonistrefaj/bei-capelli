@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import type { CarouselApi } from "@/components/ui/carousel"
-import { Calendar, RotateCcw } from "lucide-react"
+import { Calendar, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react"
 import Image from "next/image"
 import { motion } from "framer-motion"
 import { useReducedMotion } from "@/hooks/useReducedMotion"
@@ -10,12 +10,11 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselPrevious,
-  CarouselNext,
 } from "@/components/ui/carousel"
 
 import { TeamMemberData } from "@/types/strapi"
-import { getTeamMemberData, parseRichText } from "@/lib/api"
+import { parseRichText } from "@/lib/utils"
+import { createHeaderVariants, createItemVariants, createCardVariants, VIEWPORT_SETTINGS } from "@/lib/animations"
 
 interface TeamMembersSectionProps {
   teamData: TeamMemberData
@@ -23,49 +22,26 @@ interface TeamMembersSectionProps {
 
 export default function TeamMembersSection({ teamData }: TeamMembersSectionProps) {
   const [api, setApi] = useState<CarouselApi | null>(null)
+  const [current, setCurrent] = useState(0)
+  const [count, setCount] = useState(0)
   const reduceMotion = useReducedMotion()
 
-  // Animation variants
-  const headerContainer = {
-    hidden: { opacity: 0, y: 16 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: reduceMotion ? 0 : 0.6,
-        ease: "easeOut",
-        when: "beforeChildren",
-        staggerChildren: reduceMotion ? 0 : 0.06,
-      },
-    },
-  } as const
 
-  const headerItem = {
-    hidden: { opacity: 0, y: 12 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: reduceMotion ? 0 : 0.5, ease: "easeOut" },
-    },
-  } as const
+  const headerContainer = createHeaderVariants(reduceMotion)
+  const headerItem = createItemVariants(reduceMotion)
+  const card = createCardVariants(reduceMotion)
 
-  const card = {
-    hidden: { opacity: 0, y: 16 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: reduceMotion ? 0 : 0.5, ease: "easeOut" },
-    },
-  } as const
 
-  // Track selection internally without unused state to satisfy eslint
   useEffect(() => {
     if (!api) return
+
+    setCurrent(api.selectedScrollSnap())
+    setCount(api.scrollSnapList().length)
+
     const onSelect = () => {
-      // Selection side-effects can be added later if needed
-      void api.selectedScrollSnap()
+      setCurrent(api.selectedScrollSnap())
     }
-    onSelect()
+    
     api.on("select", onSelect)
     api.on("reInit", onSelect)
     return () => {
@@ -82,7 +58,7 @@ export default function TeamMembersSection({ teamData }: TeamMembersSectionProps
           variants={headerContainer}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.5 }}
+          viewport={VIEWPORT_SETTINGS}
         >
           <motion.h2 variants={headerItem} className="text-4xl lg:text-[2.875rem] text-black mb-4 lg:mb-0">
             {teamData.Title}
@@ -112,7 +88,7 @@ export default function TeamMembersSection({ teamData }: TeamMembersSectionProps
                   variants={card}
                   initial="hidden"
                   whileInView="visible"
-                  viewport={{ once: true, amount: 0.5 }}
+                  viewport={VIEWPORT_SETTINGS}
                 >
                   <div className="mb-5.5 h-[28.3125rem] w-full relative">
                     {member.TeamMemberImage?.url && (
@@ -167,14 +143,45 @@ export default function TeamMembersSection({ teamData }: TeamMembersSectionProps
             ))}
           </CarouselContent>
 
-          {/* Controls: centered on mobile, bottom-right from sm+ */}
+          {/* Custom Controls with Strapi Icons */}
           <div className="absolute top-full translate-y-6 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-12 flex items-center gap-2">
-            <CarouselPrevious
-              className="!rounded-none w-10 h-10 border border-black/20 bg-transparent text-black/60 hover:bg-black hover:text-white"
-            />
-            <CarouselNext
-              className="!rounded-none w-10 h-10 border border-black/20 bg-transparent text-black/60 hover:bg-black hover:text-white"
-            />
+            {/* Previous Button */}
+            <button
+              onClick={() => api?.scrollPrev()}
+              disabled={current === 0}
+              className="disabled:opacity-50 disabled:cursor-default cursor-pointer flex items-center justify-center transition-transform hover:scale-110 disabled:hover:scale-100"
+            >
+              {teamData.carouselButtons?.prevActiveIcon?.url && teamData.carouselButtons?.prevInactiveIcon?.url ? (
+                <Image
+                  src={current === 0 ? teamData.carouselButtons.prevInactiveIcon.url : teamData.carouselButtons.prevActiveIcon.url}
+                  alt="Previous"
+                  width={48}
+                  height={48}
+                  className="w-12 h-12"
+                />
+              ) : (
+                <ChevronLeft className="w-12 h-12" />
+              )}
+            </button>
+            
+            {/* Next Button */}
+            <button
+              onClick={() => api?.scrollNext()}
+              disabled={current === count - 1}
+              className="disabled:opacity-50 disabled:cursor-default cursor-pointer flex items-center justify-center transition-transform hover:scale-110 disabled:hover:scale-100"
+            >
+              {teamData.carouselButtons?.nextActiveIcon?.url && teamData.carouselButtons?.nextInactiveIcon?.url ? (
+                <Image
+                  src={current === count - 1 ? teamData.carouselButtons.nextInactiveIcon.url : teamData.carouselButtons.nextActiveIcon.url}
+                  alt="Next"
+                  width={48}
+                  height={48}
+                  className="w-12 h-12"
+                />
+              ) : (
+                <ChevronRight className="w-12 h-12" />
+              )}
+            </button>
           </div>
         </Carousel>
       </div>

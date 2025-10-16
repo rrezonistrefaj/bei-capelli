@@ -4,32 +4,26 @@ import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { motion } from "framer-motion"
 import { HeroSectionData } from "@/types/strapi"
+import { createContainerVariants, createItemVariants, VIEWPORT_SETTINGS } from "@/lib/animations"
+import { useReducedMotion } from "@/hooks/useReducedMotion"
 
 interface HeroSectionProps {
   heroData: HeroSectionData | null
 }
 
 export default function HeroSection({ heroData }: HeroSectionProps) {
-  const container = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        duration: 0.6,
-        when: "beforeChildren",
-        staggerChildren: 0.08,
-      },
-    },
-  } as const
+  const reduceMotion = useReducedMotion()
+  
 
-  const item = {
-    hidden: { opacity: 0, y: 16 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6, ease: "easeOut" },
-    },
-  } as const
+  const container = createContainerVariants(reduceMotion, {
+    yOffset: 0,
+    duration: 0.6,
+    staggerChildren: 0.08
+  })
+  const item = createItemVariants(reduceMotion, {
+    yOffset: 16,
+    duration: 0.6
+  })
 
   return (
     <div className="min-h-screen relative">
@@ -59,7 +53,7 @@ export default function HeroSection({ heroData }: HeroSectionProps) {
             variants={container}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.6 }}
+            viewport={VIEWPORT_SETTINGS}
           >
             {/* Main Heading */}
             <motion.h1 variants={item} className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-normal text-black leading-none">

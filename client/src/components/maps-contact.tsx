@@ -14,7 +14,7 @@ interface MapsContactProps {
 const MapsContact: React.FC<MapsContactProps> = ({ data }) => {
   const reduceMotion = useReducedMotion()
   
-  // Handle case where data is not provided
+
   if (!data) {
     return (
       <div className="px-4 xl:px-0 relative">
@@ -27,7 +27,7 @@ const MapsContact: React.FC<MapsContactProps> = ({ data }) => {
     )
   }
   
-  // Sort contact cards by order
+
   const sortedCards = data.contactCards?.sort((a, b) => a.order - b.order) || []
 
   return (

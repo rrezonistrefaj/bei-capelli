@@ -1,7 +1,17 @@
 import WelcomeSection from "@/components/welcome-section";
-import { getWelcomeSectionData } from "@/lib/api";
+import LoginSection from "@/components/login-section";
+import { getWelcomeSectionData, getLoginSectionData } from "@/lib/api";
 
 export default async function WelcomeAppointmentPage() {
-  const data = await getWelcomeSectionData();
-  return <WelcomeSection data={data} />;
+  const [welcomeData, loginData] = await Promise.all([
+    getWelcomeSectionData(),
+    getLoginSectionData()
+  ]);
+  
+  return (
+    <>
+      <WelcomeSection data={welcomeData} />
+      <LoginSection data={loginData} />
+    </>
+  );
 }

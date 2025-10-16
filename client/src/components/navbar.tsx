@@ -7,6 +7,7 @@ import Link from "next/link"
 import { motion } from "framer-motion"
 import { NavigationData } from "@/types/strapi"
 import { useReducedMotion } from "@/hooks/useReducedMotion"
+import { createContainerVariants, createItemVariants } from "@/lib/animations"
 
 interface NavbarProps {
   navigationData: NavigationData
@@ -20,31 +21,19 @@ export default function Navbar({ navigationData }: NavbarProps) {
 	const lastFocusedRef = useRef<HTMLElement | null>(null)
 	const reduceMotion = useReducedMotion()
 
-	// Animation variants
-	const containerVariants = {
-		hidden: { opacity: 0, y: -16 },
-		visible: {
-			opacity: 1,
-			y: 0,
-			transition: {
-				duration: reduceMotion ? 0 : 0.5,
-				ease: "easeOut",
-				when: "beforeChildren",
-				staggerChildren: reduceMotion ? 0 : 0.05,
-			},
-		},
-	} as const
 
-	const itemVariants = {
-		hidden: { opacity: 0, y: -8 },
-		visible: {
-			opacity: 1,
-			y: 0,
-			transition: { duration: reduceMotion ? 0 : 0.4, ease: "easeOut" },
-		},
-	} as const
+	const containerVariants = createContainerVariants(reduceMotion, {
+		yOffset: -16,
+		duration: 0.5,
+		staggerChildren: 0.05
+	})
 
-	// Header background on scroll
+	const itemVariants = createItemVariants(reduceMotion, {
+		yOffset: -8,
+		duration: 0.4
+	})
+
+
 	useEffect(() => {
 		const onScroll = () => setScrolled(window.scrollY > 10)
 		onScroll()
@@ -52,25 +41,25 @@ export default function Navbar({ navigationData }: NavbarProps) {
 		return () => window.removeEventListener("scroll", onScroll)
 	}, [])
 
-	// Lock body scroll and manage focus when mobile menu is open
+
 	useEffect(() => {
 		if (menuOpen) {
 			lastFocusedRef.current = document.activeElement as HTMLElement
 			const originalOverflow = document.body.style.overflow
 			document.body.style.overflow = "hidden"
-			// Focus close button for accessibility
+
 			const id = window.setTimeout(() => closeBtnRef.current?.focus(), 0)
 			return () => {
 				document.body.style.overflow = originalOverflow
 				window.clearTimeout(id)
 			}
 		} else {
-			// Restore focus
+
 			lastFocusedRef.current?.focus?.()
 		}
 	}, [menuOpen])
 
-	// Close on ESC key
+
 	useEffect(() => {
 		if (!menuOpen) return
 		const onKey = (e: KeyboardEvent) => {
@@ -80,7 +69,7 @@ export default function Navbar({ navigationData }: NavbarProps) {
 		return () => window.removeEventListener("keydown", onKey)
 	}, [menuOpen])
 
-	// Simple focus trap within the panel when open
+
 	const handlePanelKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
 		if (e.key !== "Tab" || !panelRef.current) return
 		const focusable = panelRef.current.querySelectorAll<HTMLElement>(

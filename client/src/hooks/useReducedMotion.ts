@@ -4,7 +4,7 @@ export function useReducedMotion() {
   const [reduceMotion, setReduceMotion] = useState(false)
   
   useEffect(() => {
-    // Check for reduced motion preference on client side only
+
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
     setReduceMotion(mediaQuery.matches)
     

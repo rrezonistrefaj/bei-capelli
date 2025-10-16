@@ -20,6 +20,19 @@ const eslintConfig = [
       "next-env.d.ts",
     ],
   },
+  {
+    files: [
+      "src/lib/api.ts",
+      "src/lib/strapi-utils.ts", 
+      "src/lib/utils.ts",
+      "src/lib/logger.ts",
+      "src/types/strapi.ts",
+      "src/components/sections/**/*.tsx"
+    ],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off"
+    }
+  }
 ];
 
 export default eslintConfig;

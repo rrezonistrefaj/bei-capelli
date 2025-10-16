@@ -1,4 +1,3 @@
-// Strapi API response types
 export interface StrapiResponse<T> {
   data: T
   meta: {
@@ -11,7 +10,6 @@ export interface StrapiResponse<T> {
   }
 }
 
-// Home page content type
 export interface HomePageContent {
   id: number
   attributes: {
@@ -23,7 +21,6 @@ export interface HomePageContent {
   }
 }
 
-// Hero section specific type
 export interface HeroSectionData {
   title: string
   description: string
@@ -66,7 +63,6 @@ export interface HeroSectionData {
   }
 }
 
-// Navigation types
 export interface NavigationItem {
   id: number
   label: string
@@ -114,7 +110,94 @@ export interface NavigationData {
   publishedAt: string
 }
 
-// Team Members section types
+export interface CarouselButtons {
+  id: number
+  prevActiveIcon?: {
+    id: number
+    documentId: string
+    name: string
+    alternativeText: string | null
+    caption: string | null
+    width: number
+    height: number
+    url: string
+    formats: any
+    hash: string
+    ext: string
+    mime: string
+    size: number
+    previewUrl: string | null
+    provider: string
+    provider_metadata: any
+    createdAt: string
+    updatedAt: string
+    publishedAt: string
+  } | null
+  prevInactiveIcon?: {
+    id: number
+    documentId: string
+    name: string
+    alternativeText: string | null
+    caption: string | null
+    width: number
+    height: number
+    url: string
+    formats: any
+    hash: string
+    ext: string
+    mime: string
+    size: number
+    previewUrl: string | null
+    provider: string
+    provider_metadata: any
+    createdAt: string
+    updatedAt: string
+    publishedAt: string
+  } | null
+  nextActiveIcon?: {
+    id: number
+    documentId: string
+    name: string
+    alternativeText: string | null
+    caption: string | null
+    width: number
+    height: number
+    url: string
+    formats: any
+    hash: string
+    ext: string
+    mime: string
+    size: number
+    previewUrl: string | null
+    provider: string
+    provider_metadata: any
+    createdAt: string
+    updatedAt: string
+    publishedAt: string
+  } | null
+  nextInactiveIcon?: {
+    id: number
+    documentId: string
+    name: string
+    alternativeText: string | null
+    caption: string | null
+    width: number
+    height: number
+    url: string
+    formats: any
+    hash: string
+    ext: string
+    mime: string
+    size: number
+    previewUrl: string | null
+    provider: string
+    provider_metadata: any
+    createdAt: string
+    updatedAt: string
+    publishedAt: string
+  } | null
+}
+
 export interface TeamMemberImage {
   id: number
   documentId: string
@@ -143,16 +226,15 @@ export interface TeamMemberData {
   CalendarIcon?: { url: string } | null
   ScheduleIcon?: { url: string } | null
   TeamMember: TeamMemberItem[]
+  carouselButtons?: CarouselButtons | null
 }
 
-// Service Item component type
 export interface ServiceItem {
   id: number
   Service: string
   Price: string
 }
 
-// Service Section component type
 export interface ServiceSection {
   id: number
   Category: string
@@ -160,7 +242,6 @@ export interface ServiceSection {
   ServiceItem: ServiceItem[]
 }
 
-// Service collection type
 export interface Service {
   id: number
   documentId: string
@@ -172,18 +253,17 @@ export interface Service {
   publishedAt: string
 }
 
-// Services Section single type
 export interface ServicesSectionData {
   id: number
   documentId: string
   Title: string
   services: Service[]
+  carouselButtons?: CarouselButtons | null
   createdAt: string
   updatedAt: string
   publishedAt: string
 }
 
-// Results Section types (matching actual Strapi structure)
 export interface ResultCard {
   id: number
   Title: string
@@ -234,7 +314,6 @@ export interface ResultsSectionData {
   publishedAt: string
 }
 
-// Before After Item types
 export interface BeforeAfterItem {
   id: string
   category: 'Kleuringen' | 'Stylen' | 'Knippen'
@@ -246,16 +325,15 @@ export interface BeforeAfterItem {
   isActive: boolean
 }
 
-// Before After Section single type
 export interface BeforeAfterSectionData {
   id: string
   title: string
   beforeAfterItems: BeforeAfterItem[]
   filterOptions: string[]
   enableZoom: boolean
+  carouselButtons?: CarouselButtons | null
 }
 
-// Product Section types
 export interface ProductSectionData {
   id: number
   documentId: string
@@ -348,7 +426,6 @@ export interface ProductSectionData {
   publishedAt: string
 }
 
-// Welcome Item types
 export interface WelcomeItem {
   id: number
   documentId: string
@@ -399,7 +476,6 @@ export interface WelcomeItem {
   publishedAt: string
 }
 
-// Welcome Section single type
 export interface WelcomeSectionData {
   id: number
   documentId: string
@@ -411,7 +487,21 @@ export interface WelcomeSectionData {
   publishedAt: string
 }
 
-// Contact Card types
+export interface LoginSectionData {
+  id: number
+  documentId: string
+  title: string
+  subtitle: string
+  description: string
+  emailPlaceholder: string
+  passwordPlaceholder: string
+  buttonText: string
+  redirectUrl: string
+  createdAt: string
+  updatedAt: string
+  publishedAt: string
+}
+
 export interface ContactCard {
   id: number
   documentId: string
@@ -455,7 +545,6 @@ export interface ContactCard {
   publishedAt: string
 }
 
-// Contact Section single type
 export interface ContactSectionData {
   id: number
   documentId: string
@@ -466,13 +555,126 @@ export interface ContactSectionData {
   publishedAt: string
 }
 
-// Generic Strapi entity
 export interface StrapiEntity {
   id: number
   attributes: Record<string, any>
 }
 
-// Footer types
+export interface StarRating {
+  id: number
+  rating: number
+  starIcon?: {
+    id: number
+    documentId: string
+    name: string
+    alternativeText: string | null
+    caption: string | null
+    width: number
+    height: number
+    url: string
+    formats: any
+    hash: string
+    ext: string
+    mime: string
+    size: number
+    previewUrl: string | null
+    provider: string
+    provider_metadata: any
+    createdAt: string
+    updatedAt: string
+    publishedAt: string
+  } | null
+  emptyStarIcon?: {
+    id: number
+    documentId: string
+    name: string
+    alternativeText: string | null
+    caption: string | null
+    width: number
+    height: number
+    url: string
+    formats: any
+    hash: string
+    ext: string
+    mime: string
+    size: number
+    previewUrl: string | null
+    provider: string
+    provider_metadata: any
+    createdAt: string
+    updatedAt: string
+    publishedAt: string
+  } | null
+}
+
+export interface ReviewItem {
+  id: number
+  customerName: string
+  reviewText: string
+  rating: number
+  reviewDate: string
+  customerAvatar?: {
+    id: number
+    documentId: string
+    name: string
+    alternativeText: string | null
+    caption: string | null
+    width: number
+    height: number
+    url: string
+    formats: any
+    hash: string
+    ext: string
+    mime: string
+    size: number
+    previewUrl: string | null
+    provider: string
+    provider_metadata: any
+    createdAt: string
+    updatedAt: string
+    publishedAt: string
+  } | null
+  order: number
+}
+
+export interface Button {
+  id: number
+  text: string
+  icon?: {
+    id: number
+    documentId: string
+    name: string
+    alternativeText: string | null
+    caption: string | null
+    width: number
+    height: number
+    url: string
+    formats: any
+    hash: string
+    ext: string
+    mime: string
+    size: number
+    previewUrl: string | null
+    provider: string
+    provider_metadata: any
+    createdAt: string
+    updatedAt: string
+    publishedAt: string
+  } | null
+}
+
+export interface ReviewsSectionData {
+  id: number
+  documentId: string
+  title: string
+  reviews: ReviewItem[]
+  carouselButtons?: CarouselButtons | null
+  button?: Button | null
+  createdAt: string
+  updatedAt: string
+  publishedAt: string
+}
+
 export interface FooterScheduleItem {
   id: number
   day: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday'

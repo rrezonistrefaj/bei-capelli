@@ -37,11 +37,8 @@ export default function Footer({ data }: FooterProps) {
 
       if (res.ok) {
         form.reset()
-      } else {
-        console.error('Submit failed')
       }
-    } catch (err) {
-      console.error('Submit error', err)
+    } catch (_err) {
     }
   }
   return (

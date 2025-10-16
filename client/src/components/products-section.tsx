@@ -14,7 +14,7 @@ interface ProductsSectionProps {
 export default function ProductsSection({ data }: ProductsSectionProps) {
   const reduceMotion = useReducedMotion()
   
-  // Parse rich text description into paragraphs
+
   const parseDescription = (description: ProductSectionData['Description']) => {
     return description
       .filter(block => block.type === 'paragraph' && block.children.some(child => child.text.trim() !== ''))

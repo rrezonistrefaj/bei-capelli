@@ -1,25 +1,49 @@
 "use client"
 
-import React from "react"
+import React, { useEffect, useState } from "react"
 import useEmblaCarousel from "embla-carousel-react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
 import { useReducedMotion } from "@/hooks/useReducedMotion"
-import { Service, ServicesSectionData } from "@/types/strapi"
+import { Service, ServicesSectionData, CarouselButtons } from "@/types/strapi"
+import Image from "next/image"
 
 interface ServicesCarouselProps {
   servicesData: Service[]
   title?: string
+  carouselButtons?: CarouselButtons | null
 }
 
-function ServicesCarousel({ servicesData, title }: ServicesCarouselProps) {
+function ServicesCarousel({ servicesData, title, carouselButtons }: ServicesCarouselProps) {
   const reduceMotion = useReducedMotion()
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "start",
     slidesToScroll: 1,
     containScroll: false,
   })
+
+  const [current, setCurrent] = useState(0)
+  const [count, setCount] = useState(0)
+
+
+  useEffect(() => {
+    if (!emblaApi) return
+
+    setCurrent(emblaApi.selectedScrollSnap())
+    setCount(emblaApi.scrollSnapList().length)
+
+    const onSelect = () => {
+      setCurrent(emblaApi.selectedScrollSnap())
+    }
+    
+    emblaApi.on("select", onSelect)
+    emblaApi.on("reInit", onSelect)
+    return () => {
+      emblaApi.off("select", onSelect)
+      emblaApi.off("reInit", onSelect)
+    }
+  }, [emblaApi])
 
   const scrollPrev = () => emblaApi && emblaApi.scrollPrev()
   const scrollNext = () => emblaApi && emblaApi.scrollNext()
@@ -90,12 +114,45 @@ function ServicesCarousel({ servicesData, title }: ServicesCarouselProps) {
           viewport={{ once: true, amount: 0.6 }}
           transition={{ duration: reduceMotion ? 0 : 0.4, ease: "easeOut" }}
         >
-          <Button variant="ghost" size="icon" onClick={scrollPrev} className="text-black hover:bg-black/10 rounded-none">
-            <ChevronLeft className="h-6 w-6" />
-          </Button>
-          <Button variant="ghost" size="icon" onClick={scrollNext} className="text-black hover:bg-black/10 rounded-none">
-            <ChevronRight className="h-6 w-6" />
-          </Button>
+          {/* Previous Button */}
+          <button
+            onClick={scrollPrev}
+            disabled={current === 0}
+            className="disabled:opacity-50 disabled:cursor-default cursor-pointer flex items-center justify-center transition-transform hover:scale-110 disabled:hover:scale-100"
+            aria-label="Previous slide"
+          >
+            {carouselButtons?.prevActiveIcon?.url && carouselButtons?.prevInactiveIcon?.url ? (
+              <Image
+                src={current === 0 ? carouselButtons.prevInactiveIcon.url : carouselButtons.prevActiveIcon.url}
+                alt="Previous"
+                width={48}
+                height={48}
+                className="w-12 h-12"
+              />
+            ) : (
+              <ChevronLeft className="w-12 h-12 text-black" />
+            )}
+          </button>
+          
+          {/* Next Button */}
+          <button
+            onClick={scrollNext}
+            disabled={current === count - 1}
+            className="disabled:opacity-50 disabled:cursor-default cursor-pointer flex items-center justify-center transition-transform hover:scale-110 disabled:hover:scale-100"
+            aria-label="Next slide"
+          >
+            {carouselButtons?.nextActiveIcon?.url && carouselButtons?.nextInactiveIcon?.url ? (
+              <Image
+                src={current === count - 1 ? carouselButtons.nextInactiveIcon.url : carouselButtons.nextActiveIcon.url}
+                alt="Next"
+                width={48}
+                height={48}
+                className="w-12 h-12"
+              />
+            ) : (
+              <ChevronRight className="w-12 h-12 text-black" />
+            )}
+          </button>
         </motion.div>
       </div>
     </div>
@@ -112,7 +169,8 @@ export default function ServicesSection({ servicesData }: ServicesSectionProps) 
       <div className=" w-full">
         <ServicesCarousel 
           servicesData={servicesData.services} 
-          title={servicesData.Title} 
+          title={servicesData.Title}
+          carouselButtons={servicesData.carouselButtons}
         />
       </div>
     </section>

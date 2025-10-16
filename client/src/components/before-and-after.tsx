@@ -18,13 +18,15 @@ interface BeforeAfterCarouselProps {
 export function BeforeAfterCarousel({ sectionData, loading }: BeforeAfterCarouselProps) {
   const [activeFilter, setActiveFilter] = useState("All")
   const [emblaRef, emblaApi] = useEmblaCarousel({
-  // Mobile-first smooth scrolling similar to other carousels
+
   loop: false,
   align: "start",
   slidesToScroll: 1,
   containScroll: "trimSnaps",
   })
 
+  const [current, setCurrent] = useState(0)
+  const [count, setCount] = useState(0)
   const [zoomSrc, setZoomSrc] = useState<string | null>(null)
   const [zoomAlt, setZoomAlt] = useState<string>("")
   const [zoomSize, setZoomSize] = useState<{ w: number; h: number } | null>(null)
@@ -40,6 +42,25 @@ export function BeforeAfterCarousel({ sectionData, loading }: BeforeAfterCarouse
     setZoomAlt("")
   setZoomSize(null)
   }
+
+
+  useEffect(() => {
+    if (!emblaApi) return
+
+    setCurrent(emblaApi.selectedScrollSnap())
+    setCount(emblaApi.scrollSnapList().length)
+
+    const onSelect = () => {
+      setCurrent(emblaApi.selectedScrollSnap())
+    }
+    
+    emblaApi.on("select", onSelect)
+    emblaApi.on("reInit", onSelect)
+    return () => {
+      emblaApi.off("select", onSelect)
+      emblaApi.off("reInit", onSelect)
+    }
+  }, [emblaApi])
 
   useEffect(() => {
     if (!zoomSrc) return
@@ -78,7 +99,7 @@ export function BeforeAfterCarousel({ sectionData, loading }: BeforeAfterCarouse
   const scrollPrev = () => emblaApi && emblaApi.scrollPrev()
   const scrollNext = () => emblaApi && emblaApi.scrollNext()
 
-  // Show loading state
+
   if (loading) {
     return (
       <div className="w-full flex justify-center items-center py-20">
@@ -87,7 +108,7 @@ export function BeforeAfterCarousel({ sectionData, loading }: BeforeAfterCarouse
     )
   }
 
-  // Show empty state
+
   if (!sectionData || !beforeAfterData.length) {
     return (
       <div className="w-full flex justify-center items-center py-20">
@@ -142,16 +163,18 @@ export function BeforeAfterCarousel({ sectionData, loading }: BeforeAfterCarouse
             >
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 items-center">
                 <div className="relative w-full aspect-square md:w-[512px] md:h-[512px] group">
-                  <Image
-                    src={item.beforeAfterImage || "/placeholder.svg"}
-                    alt={`Before and after ${item.title}`}
-                    fill
-                    className="object-cover select-none"
-                  />
+                  {item.beforeAfterImage ? (
+                    <Image
+                      src={item.beforeAfterImage}
+                      alt={`Before and after ${item.title}`}
+                      fill
+                      className="object-cover select-none"
+                    />
+                  ) : null}
                   <Button
                     type="button"
                     aria-label="Zoom image"
-                    onClick={() => openZoom(item.beforeAfterImage || "/placeholder.svg", `Before and after ${item.title}`)}
+                    onClick={() => item.beforeAfterImage && openZoom(item.beforeAfterImage, `Before and after ${item.title}`)}
                     variant="ghost"
                     size="icon"
                     className="hidden md:inline-flex absolute top-2 right-2 bg-transparent hover:bg-transparent text-black cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-black"
@@ -203,19 +226,44 @@ export function BeforeAfterCarousel({ sectionData, loading }: BeforeAfterCarouse
                     viewport={{ once: true, amount: 0.8 }}
                     transition={{ duration: reduceMotion ? 0 : 0.35, ease: "easeOut" }}
                   >
+                    {/* Previous Button */}
                     <button
                       onClick={scrollPrev}
-                      className="p-2 hover:bg-black/10 rounded-full transition-colors"
+                      disabled={current === 0}
+                      className="disabled:opacity-50 disabled:cursor-default cursor-pointer flex items-center justify-center transition-transform hover:scale-110 disabled:hover:scale-100"
                       aria-label="Previous slide"
                     >
-                      <ChevronLeft className="w-6 h-6 text-black" />
+                      {sectionData?.carouselButtons?.prevActiveIcon?.url && sectionData?.carouselButtons?.prevInactiveIcon?.url ? (
+                        <Image
+                          src={current === 0 ? sectionData.carouselButtons.prevInactiveIcon.url : sectionData.carouselButtons.prevActiveIcon.url}
+                          alt="Previous"
+                          width={48}
+                          height={48}
+                          className="w-12 h-12"
+                        />
+                      ) : (
+                        <ChevronLeft className="w-12 h-12 text-black" />
+                      )}
                     </button>
+                    
+                    {/* Next Button */}
                     <button
                       onClick={scrollNext}
-                      className="p-2 hover:bg-black/10 rounded-full transition-colors"
+                      disabled={current === count - 1}
+                      className="disabled:opacity-50 disabled:cursor-default cursor-pointer flex items-center justify-center transition-transform hover:scale-110 disabled:hover:scale-100"
                       aria-label="Next slide"
                     >
-                      <ChevronRight className="w-6 h-6 text-black" />
+                      {sectionData?.carouselButtons?.nextActiveIcon?.url && sectionData?.carouselButtons?.nextInactiveIcon?.url ? (
+                        <Image
+                          src={current === count - 1 ? sectionData.carouselButtons.nextInactiveIcon.url : sectionData.carouselButtons.nextActiveIcon.url}
+                          alt="Next"
+                          width={48}
+                          height={48}
+                          className="w-12 h-12"
+                        />
+                      ) : (
+                        <ChevronRight className="w-12 h-12 text-black" />
+                      )}
                     </button>
                   </motion.div>
                 </div>
@@ -264,14 +312,13 @@ export default function BeforeAndAfter() {
   const [sectionData, setSectionData] = useState<BeforeAfterSectionData | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Fetch section data for title
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const data = await getBeforeAfterSectionData()
         setSectionData(data)
       } catch (error) {
-        console.error('Error fetching before after section data:', error)
         setSectionData(null)
       } finally {
         setLoading(false)

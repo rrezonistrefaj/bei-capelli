@@ -1,61 +1,20 @@
 "use client"
-import React from "react"
+import React, { useEffect, useState } from "react"
 import useEmblaCarousel from "embla-carousel-react"
 import { ChevronLeft, ChevronRight, Star, Edit } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { motion } from "framer-motion"
 import { useReducedMotion } from "@/hooks/useReducedMotion"
+import { ReviewsSectionData } from "@/types/strapi"
+import { getReviewsSectionData } from "@/lib/api"
+import { SectionLoadingState, SectionEmptyState } from "@/components/ui/loading-states"
 
-const reviews = [
-  {
-    id: 1,
-    rating: 5,
-    text: "Ik was hier voor het eerst, super professioneel geholpen door de kapster, welkom gevoel en een hele leuke en vrolijke kapster. Ben heel blij met het resultaat. Mijn haar is mooi geknipt en weer heel blij met mijn kleur. Dus als je op zoekt bent naar een goede kapsalon, zeker een aanrader😊Service: Hair styling",
-    customerName: "Maren Van Hal",
-    date: "11 Mei 2024",
-    avatar: "/images/review-image-1.png",
-    service: "Hair styling",
-  },
-  {
-    id: 2,
-    rating: 5,
-    text: "Ik kom zelf uit Renkum en heb in deze omgeving al meerder kapsalons bezocht en uitgeprobeerd maar nu ik bij Bei Capelli kom voel ik mij hier thuis. Het team wat hier werkt is zeer professioneel en geven je ook advies waar je wat aan hebt. Smeren je niets aan. Daarnaast werken ze met mooie producten die echt doen wat ze zeggen. Had ik deze maar eerder ontdekt.",
-    customerName: "Maren Van Hal",
-    date: "11 Mei 2024",
-    avatar: "/images/review-image-2.png",
-    service: "Hair styling",
-  },
-  {
-    id: 3,
-    rating: 5,
-    text: "Ik was hier voor het eerst, super professioneel geholpen door de kapster, welkom gevoel en een hele leuke en vrolijke kapster. Ben heel blij met het resultaat. Mijn haar is mooi geknipt en weer heel blij met mijn kleur. Dus als je op zoekt bent naar een goede kapsalon, zeker een aanrader😊Service: Hair styling",
-    customerName: "Maren Van Hal",
-    date: "11 Mei 2024",
-    avatar: "/images/review-image-3.png",
-    service: "Hair styling",
-  },
-  {
-    id: 4,
-    rating: 5,
-    text: "Ik was hier voor het eerst, super professioneel geholpen door de kapster, welkom gevoel en een hele leuke en vrolijke kapster. Ben heel blij met het resultaat. Mijn haar is mooi geknipt en weer heel blij met mijn kleur. Dus als je op zoekt bent naar een goede kapsalon, zeker een aanrader😊Service: Hair styling",
-    customerName: "Maren Van Hal",
-    date: "11 Mei 2024",
-    avatar: "/images/review-image-2.png",
-    service: "Hair styling",
-  },
-  {
-    id: 5,
-    rating: 5,
-    text: "Geweldige ervaring bij Bei Capelli! Het team is zeer kundig en luistert goed naar wat je wilt. Mijn haar ziet er fantastisch uit en ik voel me helemaal opnieuw. Zeker een aanrader voor iedereen die op zoek is naar kwaliteit en service.",
-    customerName: "Maren Van Hal",
-    date: "11 Mei 2024",
-    avatar: "/images/review-image-1.png",
-    service: "Hair coloring",
-  },
-]
+interface ReviewsCarouselProps {
+  reviewsData: ReviewsSectionData
+}
 
-export function ReviewsCarousel() {
+export const ReviewsCarousel = React.memo(function ReviewsCarousel({ reviewsData }: ReviewsCarouselProps) {
   const reduceMotion = useReducedMotion()
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "start",
@@ -63,8 +22,45 @@ export function ReviewsCarousel() {
     slidesToScroll: 1,
   })
 
-  const scrollPrev = () => emblaApi?.scrollPrev()
-  const scrollNext = () => emblaApi?.scrollNext()
+  const [current, setCurrent] = useState(0)
+  const [count, setCount] = useState(0)
+
+
+  useEffect(() => {
+    if (!emblaApi) return
+
+    setCurrent(emblaApi.selectedScrollSnap())
+    setCount(emblaApi.scrollSnapList().length)
+
+    const onSelect = () => {
+      setCurrent(emblaApi.selectedScrollSnap())
+    }
+    
+    emblaApi.on("select", onSelect)
+    emblaApi.on("reInit", onSelect)
+    return () => {
+      emblaApi.off("select", onSelect)
+      emblaApi.off("reInit", onSelect)
+    }
+  }, [emblaApi])
+
+  const scrollPrev = React.useCallback(() => emblaApi?.scrollPrev(), [emblaApi])
+  const scrollNext = React.useCallback(() => emblaApi?.scrollNext(), [emblaApi])
+
+
+  const formatDate = React.useCallback((dateString: string) => {
+    const date = new Date(dateString)
+    const formattedDate = date.toLocaleDateString('nl-NL', { 
+      day: 'numeric', 
+      month: 'long', 
+      year: 'numeric' 
+    })
+
+    return formattedDate.replace(/\b\w/g, (char) => {
+
+      return char.toUpperCase()
+    })
+  }, [])
 
   return (
     <div className="relative">
@@ -73,7 +69,7 @@ export function ReviewsCarousel() {
         {/* Embla viewport: allow visible overflow so slides can peek past the right edge */}
     <div className="overflow-hidden sm:overflow-visible" ref={emblaRef}>
       <div className="flex pl-0 gap-4 sm:gap-6">
-            {reviews.map((review) => (
+            {reviewsData.reviews?.map((review) => (
         <div key={review.id} className="flex-[0_0_100%] sm:flex-[0_0_404px]">
                 <motion.div
                   className="border border-gray-400 px-10 pt-6.5 pb-8.5 h-full min-h-[450px] flex flex-col bg-transparent"
@@ -85,25 +81,30 @@ export function ReviewsCarousel() {
                   {/* Star Rating */}
                   <div className="flex mb-4">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-5 h-5 fill-black text-black" />
+                      <Star 
+                        key={i} 
+                        className={`w-5 h-5 ${i < review.rating ? 'fill-black text-black' : 'text-gray-300'}`} 
+                      />
                     ))}
                   </div>
 
                   {/* Review Text */}
-                  <p className="text-black text-xl leading-5.5 mb-6 flex-grow">{review.text}</p>
+                  <p className="text-black text-xl leading-5.5 mb-6 flex-grow">{review.reviewText}</p>
 
                   {/* Customer Info */}
                   <div className="flex items-center">
-                    <Image
-                      src={review.avatar || "/placeholder.svg"}
-                      alt={review.customerName}
-                      width={80}
-                      height={80}
-                      className="w-20 h-20 rounded-full mr-3 object-cover"
-                    />
+                    {review.customerAvatar?.url ? (
+                      <Image
+                        src={review.customerAvatar.url}
+                        alt={review.customerName}
+                        width={80}
+                        height={80}
+                        className="w-20 h-20 rounded-full mr-3 object-cover"
+                      />
+                    ) : null}
                     <div>
                       <h4 className="text-black font-normal text-xl">{review.customerName}</h4>
-                      <p className="text-black text-base font-light">{review.date}</p>
+                      <p className="text-black text-base font-light">{formatDate(review.reviewDate)}</p>
                     </div>
                   </div>
                 </motion.div>
@@ -121,65 +122,135 @@ export function ReviewsCarousel() {
     viewport={{ once: true, amount: 0.6 }}
     transition={{ duration: reduceMotion ? 0 : 0.4, ease: "easeOut" }}
   >
-        {/* Place Review Button */}
-        <Button
-          variant="outline"
-          className="border-black text-black hover:bg-black hover:text-white transition-colors bg-transparent rounded-none flex items-center text-xl font-light gap-2 !px-6 !py-6"
-        >
-          <Edit className="w-5 h-5" />
-          Plaats een Review
-        </Button>
+                {/* Place Review Button */}
+                {reviewsData.button ? (
+                  <Button
+                    variant="outline"
+                    className="border-black text-black hover:bg-black hover:text-white transition-colors bg-transparent rounded-none flex items-center text-xl font-light gap-2 !px-6 !py-6"
+                  >
+                    {reviewsData.button.icon?.url ? (
+                      <Image
+                        src={reviewsData.button.icon.url}
+                        alt={reviewsData.button.icon.alternativeText || "Button icon"}
+                        width={20}
+                        height={20}
+                        className="w-5 h-5"
+                      />
+                    ) : (
+                      <Edit className="w-5 h-5" />
+                    )}
+                    {reviewsData.button.text}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    className="border-black text-black hover:bg-black hover:text-white transition-colors bg-transparent rounded-none flex items-center text-xl font-light gap-2 !px-6 !py-6"
+                  >
+                    <Edit className="w-5 h-5" />
+                    Plaats een Review
+                  </Button>
+                )}
 
         {/* Navigation Arrows */}
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
+          {/* Previous Button */}
+          <button
             onClick={scrollPrev}
-            className="text-black hover:bg-black/10 rounded-none p-2"
+            disabled={current === 0}
+            className="disabled:opacity-50 disabled:cursor-default cursor-pointer flex items-center justify-center transition-transform hover:scale-110 disabled:hover:scale-100"
             aria-label="Previous reviews"
           >
-            <ChevronLeft className="w-6 h-6 text-black" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
+            {reviewsData.carouselButtons?.prevActiveIcon?.url && reviewsData.carouselButtons?.prevInactiveIcon?.url ? (
+              <Image
+                src={current === 0 ? reviewsData.carouselButtons.prevInactiveIcon.url : reviewsData.carouselButtons.prevActiveIcon.url}
+                alt="Previous"
+                width={48}
+                height={48}
+                className="w-12 h-12"
+              />
+            ) : (
+              <ChevronLeft className="w-12 h-12 text-black" />
+            )}
+          </button>
+          
+          {/* Next Button */}
+          <button
             onClick={scrollNext}
-            className="text-black hover:bg-black/10 rounded-none p-2"
+            disabled={current === count - 1}
+            className="disabled:opacity-50 disabled:cursor-default cursor-pointer flex items-center justify-center transition-transform hover:scale-110 disabled:hover:scale-100"
             aria-label="Next reviews"
           >
-            <ChevronRight className="w-6 h-6 text-black" />
-          </Button>
+            {reviewsData.carouselButtons?.nextActiveIcon?.url && reviewsData.carouselButtons?.nextInactiveIcon?.url ? (
+              <Image
+                src={current === count - 1 ? reviewsData.carouselButtons.nextInactiveIcon.url : reviewsData.carouselButtons.nextActiveIcon.url}
+                alt="Next"
+                width={48}
+                height={48}
+                className="w-12 h-12"
+              />
+            ) : (
+              <ChevronRight className="w-12 h-12 text-black" />
+            )}
+          </button>
         </div>
   </motion.div>
     </div>
   )
-}
+})
 
-export default function ReviewsSection() {
+const ReviewsSection = React.memo(function ReviewsSection() {
+  const [reviewsData, setReviewsData] = useState<ReviewsSectionData | null>(null)
+  const [loading, setLoading] = useState(true)
   const reduceMotion = useReducedMotion()
+
+
+  const fetchData = React.useCallback(async () => {
+    try {
+      const data = await getReviewsSectionData()
+      setReviewsData(data)
+    } catch (error) {
+      setReviewsData(null)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
+
+  if (loading) {
+    return <SectionLoadingState title="Loading reviews..." />
+  }
+
+  if (!reviewsData) {
+    return <SectionEmptyState message="No reviews available." />
+  }
+
   return (
     /* Reviews Section */
-    <section className=" px-4 xl:px-0">
+    <section className="px-4 xl:px-0">
       {/* Section Header aligned with content container */}
       <div className="mb-6">
         <div className="max-w-[78.5rem] mx-auto">
           <motion.h2
-            className="text-4xl md:text-5xl text-black "
+            className="text-4xl md:text-5xl text-black"
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.6 }}
             transition={{ duration: reduceMotion ? 0 : 0.6, ease: "easeOut" }}
           >
-            REVIEWS
+            {reviewsData.title || 'REVIEWS'}
           </motion.h2>
         </div>
       </div>
 
       {/* Reviews Carousel - extends to screen edge but limited visually to 1265px center with overflow visible on right */}
       <div className="">
-        <ReviewsCarousel />
+        <ReviewsCarousel reviewsData={reviewsData} />
       </div>
     </section>
   )
-}
+})
+
+export default ReviewsSection

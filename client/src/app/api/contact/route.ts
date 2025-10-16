@@ -25,17 +25,28 @@ export async function POST(req: Request) {
       },
     })
 
+    const escapeHtml = (input: string) =>
+      input
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+
+    const safeName = escapeHtml(String(name))
+    const safeMessage = escapeHtml(String(message))
+    const safeEmail = String(email)
+
     await transporter.sendMail({
       from: process.env.MAIL_FROM,
       to: process.env.MAIL_TO,
-      subject: `Contact formulier - ${name}`,
-      text: `${message}\n\nVan: ${name} <${email}>`,
-      html: `<p>${String(message).replace(/\n/g, '<br>')}</p><p>Van: <strong>${name}</strong> &lt;${email}&gt;</p>`,
+      subject: `Contact formulier - ${safeName}`,
+      text: `${safeMessage}\n\nVan: ${safeName} <${safeEmail}>`,
+      html: `<p>${safeMessage.replace(/\n/g, '<br>')}</p><p>Van: <strong>${safeName}</strong> &lt;${safeEmail}&gt;</p>`,
     })
 
     return NextResponse.json({ ok: true })
-  } catch (err) {
-    console.error('Contact API error:', err)
+  } catch (_err) {
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }

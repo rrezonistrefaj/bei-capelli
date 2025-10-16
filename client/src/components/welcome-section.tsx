@@ -5,7 +5,7 @@ import Image from "next/image"
 import { motion } from "framer-motion"
 import { useReducedMotion } from "@/hooks/useReducedMotion"
 import { WelcomeSectionData, WelcomeItem } from "@/types/strapi"
-import { parseRichText } from "@/lib/api"
+import { parseRichText } from "@/lib/utils"
 
 interface WelcomeSectionProps {
   data: WelcomeSectionData
@@ -14,7 +14,7 @@ interface WelcomeSectionProps {
 const WelcomeSection = ({ data }: WelcomeSectionProps) => {
   const reduceMotion = useReducedMotion()
   
-  // Sort welcome items by order
+
   const sortedItems = data.welcomeItems?.sort((a, b) => a.order - b.order) || []
   
   return (

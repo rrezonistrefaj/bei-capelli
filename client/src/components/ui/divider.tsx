@@ -1,11 +1,10 @@
 import React from 'react'
 
 type Props = {
-  inset?: boolean // whether the divider should be inset (horizontal padding)
+  inset?: boolean 
   className?: string
 }
 
-// Tailwind-only Divider: a thin rule centered inside the page container.
 export default function Divider({ inset = false, className = '' }: Props) {
   return (
     <div className={`w-full ${className}`} aria-hidden>
