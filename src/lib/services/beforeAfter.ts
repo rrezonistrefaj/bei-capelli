@@ -23,18 +23,19 @@ export async function getBeforeAfterSectionData(): Promise<BeforeAfterSectionDat
     carouselButtons?: BeforeAfterSectionData['carouselButtons']
   }
 
-  const data = await fetchStrapiData<Record<string, unknown>>('/before-after-section', {
-    populate: {
-      beforeAfterItems: {
-        populate: 'beforeAfterImage'
-      },
-      carouselButtons: {
-        populate: ['prevActiveIcon', 'prevInactiveIcon', 'nextActiveIcon', 'nextInactiveIcon']
+  try {
+    const data = await fetchStrapiData<Record<string, unknown>>('/before-after-section', {
+      populate: {
+        beforeAfterItems: {
+          populate: 'beforeAfterImage'
+        },
+        carouselButtons: {
+          populate: ['prevActiveIcon', 'prevInactiveIcon', 'nextActiveIcon', 'nextInactiveIcon']
+        }
       }
-    }
-  }, 'before-after section')
+    }, 'before-after section')
 
-  const rawData = data as unknown as RawBeforeAfterSectionData
+    const rawData = data as unknown as RawBeforeAfterSectionData
 
   if (rawData.carouselButtons) {
     const { prevActiveIcon, prevInactiveIcon, nextActiveIcon, nextInactiveIcon } = rawData.carouselButtons
@@ -62,6 +63,10 @@ export async function getBeforeAfterSectionData(): Promise<BeforeAfterSectionDat
     carouselButtons: rawData.carouselButtons
   }
 
-  return transformedData
+    return transformedData
+  } catch (error) {
+    console.error('Error fetching before-after section:', error)
+    throw error
+  }
 }
 

@@ -84,12 +84,19 @@ export async function POST(request: NextRequest) {
       }
     );
   } catch (error) {
+    // Log detailed error server-side
     console.error("Contact form error:", error);
+
+    // Return generic error message to client (don't expose internal details)
+    const isProduction = process.env.NODE_ENV === 'production'
+    const errorMessage = isProduction 
+      ? "An error occurred while processing your request. Please try again later."
+      : (error instanceof Error ? error.message : "Server error")
 
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Server error",
+        error: errorMessage,
       },
       { status: 500 }
     );

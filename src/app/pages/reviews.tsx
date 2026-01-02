@@ -1,5 +1,8 @@
-import ReviewsSection from "@/components/reviews-section";
+import ReviewsSection from "@/components/reviews-section"
+import { getReviewsSectionData } from "@/lib/api"
 
-export default function ReviewsPage() {
-  return <ReviewsSection />
+export default async function ReviewsPage() {
+  const reviewsData = await getReviewsSectionData().catch(() => null)
+
+  return <ReviewsSection data={reviewsData || undefined} />
 }

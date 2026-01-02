@@ -18,7 +18,11 @@ function getImageUrl(image: StrapiImage | { data?: { url?: string; attributes?: 
   }
   
   if (!raw) return ''
-  const base = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337'
+  const base = process.env.NEXT_PUBLIC_STRAPI_URL
+  if (!base) {
+    console.error('NEXT_PUBLIC_STRAPI_URL is not configured')
+    return raw.startsWith('http') ? raw : ''
+  }
   return raw.startsWith('http') ? raw : `${base}${raw}`
 }
 

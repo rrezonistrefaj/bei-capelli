@@ -1,5 +1,13 @@
+const getStrapiBaseUrl = (): string => {
+  const url = process.env.NEXT_PUBLIC_STRAPI_URL
+  if (!url && process.env.NODE_ENV === 'production') {
+    throw new Error('NEXT_PUBLIC_STRAPI_URL environment variable is required in production')
+  }
+  return url || 'http://localhost:1337'
+}
+
 export const STRAPI_CONFIG = {
-  BASE_URL: process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337',
+  BASE_URL: getStrapiBaseUrl(),
   TIMEOUT: 10000,
   DEFAULT_IMAGE: '/placeholder.svg'
 } as const

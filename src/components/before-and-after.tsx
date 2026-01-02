@@ -308,16 +308,26 @@ export function BeforeAfterCarousel({ sectionData, loading }: BeforeAfterCarouse
   )
 }
 
-export default function BeforeAndAfter() {
-  const [sectionData, setSectionData] = useState<BeforeAfterSectionData | null>(null)
-  const [loading, setLoading] = useState(true)
+interface BeforeAndAfterProps {
+  data?: BeforeAfterSectionData
+}
+
+export default function BeforeAndAfter({ data }: BeforeAndAfterProps) {
+  const [sectionData, setSectionData] = useState<BeforeAfterSectionData | null>(data || null)
+  const [loading, setLoading] = useState(!data)
 
 
   useEffect(() => {
+    if (data) {
+      setSectionData(data)
+      setLoading(false)
+      return
+    }
+
     const fetchData = async () => {
       try {
-        const data = await getBeforeAfterSectionData()
-        setSectionData(data)
+        const fetchedData = await getBeforeAfterSectionData()
+        setSectionData(fetchedData)
       } catch {
         setSectionData(null)
       } finally {
@@ -326,7 +336,7 @@ export default function BeforeAndAfter() {
     }
     
     fetchData()
-  }, [])
+  }, [data])
 
   if (loading) {
     return (

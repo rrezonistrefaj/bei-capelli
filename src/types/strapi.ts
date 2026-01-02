@@ -670,6 +670,7 @@ export interface ContactCard extends Record<string, unknown> {
   createdAt: string
   updatedAt: string
   publishedAt: string
+  [key: string]: unknown
 }
 
 export interface ContactSectionData extends Record<string, unknown> {

@@ -120,7 +120,10 @@ export default function ContentSection({ data }: { data: ContentSectionData }) {
   let images: Array<{ url: string; alternativeText?: string; caption?: string }> = [];
 
   // Helper to ensure absolute Strapi URLs on the client (in case API didn't normalize)
-  const STRAPI_BASE = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337';
+  const STRAPI_BASE = process.env.NEXT_PUBLIC_STRAPI_URL;
+  if (!STRAPI_BASE) {
+    throw new Error('NEXT_PUBLIC_STRAPI_URL environment variable is required');
+  }
   const toAbsolute = (url?: string | null): string => {
     if (!url) return '';
     return url.startsWith('http') ? url : `${STRAPI_BASE}${url}`;
@@ -224,7 +227,12 @@ export default function ContentSection({ data }: { data: ContentSectionData }) {
               } else if ('data' in img) {
                 url = img.data?.url || img.data?.attributes?.url || '';
               }
-              return url?.startsWith('http') ? url : `${process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337'}${url}`;
+              const strapiBase = process.env.NEXT_PUBLIC_STRAPI_URL;
+              if (!strapiBase) {
+                console.error('NEXT_PUBLIC_STRAPI_URL is not configured');
+                return url || '';
+              }
+              return url?.startsWith('http') ? url : `${strapiBase}${url}`;
             })()}
             alt={(() => {
               const img = data.fullWidthImage;

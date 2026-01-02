@@ -15,8 +15,8 @@ const fallbackServicesData: ServicesSectionData = {
 
 export default async function ServicesPage() {
   try {
-    const servicesData = await getServicesSectionData()
-    return <ServicesSection servicesData={servicesData} />
+  const servicesData = await getServicesSectionData()
+  return <ServicesSection servicesData={servicesData} />
   } catch (error) {
     console.error('Error fetching services data:', error)
     return <ServicesSection servicesData={fallbackServicesData} />

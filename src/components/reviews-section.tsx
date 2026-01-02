@@ -198,16 +198,20 @@ export const ReviewsCarousel = React.memo(function ReviewsCarousel({ reviewsData
   )
 })
 
-const ReviewsSection = React.memo(function ReviewsSection() {
-  const [reviewsData, setReviewsData] = useState<ReviewsSectionData | null>(null)
-  const [loading, setLoading] = useState(true)
+interface ReviewsSectionProps {
+  data?: ReviewsSectionData
+}
+
+const ReviewsSection = React.memo(function ReviewsSection({ data }: ReviewsSectionProps) {
+  const [reviewsData, setReviewsData] = useState<ReviewsSectionData | null>(data || null)
+  const [loading, setLoading] = useState(!data)
   const reduceMotion = useReducedMotion()
 
 
   const fetchData = React.useCallback(async () => {
     try {
-      const data = await getReviewsSectionData()
-      setReviewsData(data)
+      const fetchedData = await getReviewsSectionData()
+      setReviewsData(fetchedData)
     } catch {
       setReviewsData(null)
     } finally {
@@ -216,8 +220,13 @@ const ReviewsSection = React.memo(function ReviewsSection() {
   }, [])
 
   useEffect(() => {
+    if (data) {
+      setReviewsData(data)
+      setLoading(false)
+      return
+    }
     fetchData()
-  }, [fetchData])
+  }, [data, fetchData])
 
   if (loading) {
     return <SectionLoadingState title="Loading reviews..." />

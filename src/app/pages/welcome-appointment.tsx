@@ -31,17 +31,17 @@ const fallbackLoginData: LoginSectionData = {
 
 export default async function WelcomeAppointmentPage() {
   try {
-    const [welcomeData, loginData] = await Promise.all([
-      getWelcomeSectionData(),
-      getLoginSectionData()
-    ]);
-    
-    return (
-      <>
-        <WelcomeSection data={welcomeData} />
-        <LoginSection data={loginData} />
-      </>
-    );
+  const [welcomeData, loginData] = await Promise.all([
+    getWelcomeSectionData(),
+    getLoginSectionData()
+  ]);
+  
+  return (
+    <>
+      <WelcomeSection data={welcomeData} />
+      <LoginSection data={loginData} />
+    </>
+  );
   } catch (error) {
     console.error('Error fetching welcome/login data:', error)
     return (

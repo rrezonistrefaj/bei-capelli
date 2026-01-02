@@ -31,16 +31,16 @@ const fallbackFooterData: FooterData = {
 
 const ContactPage = async () => {
   try {
-    const [contactData, footerData] = await Promise.all([
-      getContactSectionData(),
-      getFooterData(),
-    ])
-    return (
-      <>
-        <MapsContact data={contactData} />
-        <Footer data={footerData} />
-      </>
-    )
+  const [contactData, footerData] = await Promise.all([
+    getContactSectionData(),
+    getFooterData(),
+  ])
+  return (
+    <>
+      <MapsContact data={contactData} />
+      <Footer data={footerData} />
+    </>
+  )
   } catch (error) {
     console.error('Error fetching contact/footer data:', error)
     return (

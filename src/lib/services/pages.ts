@@ -1,9 +1,5 @@
-import { normalizeStrapiUrl } from './strapi'
+import { normalizeStrapiUrl, strapiClient, extractStrapiData } from './strapi'
 import type { StrapiPageSection, StrapiImage, ContentPageSection } from '@/types/strapi'
-
-const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337'
-const STRAPI_API_TOKEN = process.env.STRAPI_API_TOKEN
-const DEFAULT_REVALIDATE_SECONDS = 60
 
 // Strapi page structure
 export interface StrapiPage {
@@ -30,40 +26,33 @@ export async function getPageBySlug(slug: string): Promise<StrapiPage | null> {
   }
   
   try {
-    
-    // Use direct URL searchParams approach like treplus for reliability
-    const url = new URL(`${STRAPI_URL}/api/pages`);
-    url.searchParams.append('filters[slug]', slug);
-    url.searchParams.append('populate[sections][populate]', '*');
-    url.searchParams.append('populate[seo][populate][shareImage]', 'true');
-    
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
-    
-    if (STRAPI_API_TOKEN) {
-      headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
-    }
-    
-    const response = await fetch(url.toString(), {
-      headers,
-      next: { revalidate: DEFAULT_REVALIDATE_SECONDS },
+    const response = await strapiClient.get<StrapiPage[]>('/pages', {
+      params: {
+        filters: {
+          slug: slug
+        },
+        populate: {
+          sections: {
+            populate: '*'
+          },
+          seo: {
+            populate: {
+              shareImage: true
+            }
+          }
+        }
+      }
     });
     
-    if (!response.ok) {
-      return null;
-    }
+    const data = extractStrapiData<StrapiPage[]>(response);
     
-    const result = await response.json();
-    
-    if (!result.data || !Array.isArray(result.data) || result.data.length === 0) {
+    if (!Array.isArray(data) || data.length === 0) {
+      console.warn(`No page found with slug "${slug}"`)
       return null;
     }
 
-    // Extract the page data (Strapi v4+ format: { id, attributes: {...} })
-    const item = result.data[0];
-    const { id, attributes } = item;
-    const page = attributes ? { id, ...attributes } : item;
+    // Get the first matching page
+    const page = data[0];
 
     // Normalize media URLs inside sections for slug pages
     if (page && Array.isArray(page.sections)) {
@@ -124,46 +113,22 @@ export async function getPageBySlug(slug: string): Promise<StrapiPage | null> {
 // Helper function to get all page slugs (for debugging)
 export async function getAllPageSlugs(): Promise<string[]> {
   try {
-    const url = new URL(`${STRAPI_URL}/api/pages`);
-    url.searchParams.append('fields[0]', 'slug');
-    url.searchParams.append('pagination[pageSize]', '100');
-    
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
-    
-    if (STRAPI_API_TOKEN) {
-      headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
-    }
-    
-    const response = await fetch(url.toString(), {
-      headers,
-      next: { revalidate: DEFAULT_REVALIDATE_SECONDS },
+    const response = await strapiClient.get<Array<{ slug: string }>>('/pages', {
+      params: {
+        fields: ['slug'],
+        pagination: {
+          pageSize: 100
+        }
+      }
     });
     
-    if (!response.ok) {
-      return [];
-    }
-    
-    const result = await response.json();
-    const data = result.data || []
+    const data = extractStrapiData<Array<{ slug: string }>>(response);
 
     if (!Array.isArray(data)) return []
 
-    interface StrapiPageSlugItem {
-      slug?: string
-      attributes?: {
-        slug?: string
-      }
-    }
-
     return data
-      .map((item: StrapiPageSlugItem): string | undefined => {
-        // Handle Strapi v4+ format: { id, attributes: { slug } } or flat { slug }
-        const slug = item?.attributes?.slug || item?.slug;
-        return slug;
-      })
-      .filter((slug: string | undefined): slug is string => !!slug)
+      .map((item) => item?.slug)
+      .filter((slug): slug is string => !!slug)
   } catch (error) {
     console.error('Error fetching all page slugs:', error)
     return []

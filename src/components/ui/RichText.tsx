@@ -271,7 +271,7 @@ export default function RichText({ content, className }: RichTextProps) {
             return (
               <figure className="my-6">
                 <img 
-                  src={imageUrl.startsWith('http') ? imageUrl : `${process.env.NEXT_PUBLIC_STRAPI_URL || ''}${imageUrl}`}
+                  src={imageUrl.startsWith('http') ? imageUrl : (process.env.NEXT_PUBLIC_STRAPI_URL ? `${process.env.NEXT_PUBLIC_STRAPI_URL}${imageUrl}` : imageUrl)}
                   alt={alt}
                   className="w-full rounded"
                 />

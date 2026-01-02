@@ -1,15 +1,12 @@
 import { STRAPI_CONFIG, ERROR_MESSAGES } from '../constants'
 import type { StrapiResponse } from '@/types/strapi'
+import { env } from '../env'
 export type { StrapiResponse }
 
-// Environment variable validation
-const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337'
-const STRAPI_API_TOKEN = process.env.STRAPI_API_TOKEN
+// Use validated environment variables
+const STRAPI_URL = env.STRAPI_URL
+const STRAPI_API_TOKEN = env.STRAPI_API_TOKEN
 const DEFAULT_REVALIDATE_SECONDS = 60
-
-if (!STRAPI_URL && process.env.NODE_ENV === 'production') {
-  throw new Error('NEXT_PUBLIC_STRAPI_URL environment variable is required in production')
-}
 
 // Populate parameter can be string, array of strings, or nested object
 export type StrapiPopulateParam = 
@@ -27,8 +24,14 @@ export interface StrapiQueryParams {
 
 // Build URL with query parameters (handles Strapi's nested format)
 function buildStrapiUrl(endpoint: string, params?: StrapiQueryParams): URL {
-  const baseUrl = `${STRAPI_URL}/api${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`
-  const url = new URL(baseUrl)
+  // Remove trailing slash from STRAPI_URL and ensure endpoint starts with /
+  if (!STRAPI_URL) {
+    throw new Error('STRAPI_URL is not configured. Please set NEXT_PUBLIC_STRAPI_URL environment variable.')
+  }
+  const baseUrl = STRAPI_URL.replace(/\/$/, '')
+  const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`
+  const fullUrl = `${baseUrl}/api${normalizedEndpoint}`
+  const url = new URL(fullUrl)
   
   if (!params) return url
   
